@@ -1,4 +1,6 @@
 import argparse
+import errno
+import subprocess
 import sys
 
 from agentman.common import perror
@@ -109,8 +111,30 @@ def main():
         args.func(args)
     except HelpException:
         parser.print_help()
+        sys.exit(0)
     except AttributeError as e:
         parser.print_usage()
         perror("agentman: requires a subcommand")
         if getattr(args, "debug", False):
             raise e
+    except AttributeError as e:
+        parser.print_usage()
+        perror("ramalama: requires a subcommand")
+        if getattr(args, "debug", False):
+            raise e
+    except IndexError as e:
+        eprint(e, errno.EINVAL)
+    except KeyError as e:
+        eprint(e, 1)
+    except NotImplementedError as e:
+        eprint(e, errno.ENOTSUP)
+    except subprocess.CalledProcessError as e:
+        eprint(e, e.returncode)
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except ConnectionError as e:
+        eprint(e, errno.EINVAL)
+    except ValueError as e:
+        eprint(e, errno.EINVAL)
+    except IOError as e:
+        eprint(e, errno.EIO)
