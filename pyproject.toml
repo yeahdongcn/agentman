@@ -1,0 +1,53 @@
+[project]
+name = "agentman"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Xiaodong Ye", email = "yeahdongcn@gmail.com" },
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fast-agent-mcp>=0.2.28",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=25.1.0",
+    "isort>=6.0.1",
+]
+
+[project.scripts]
+agentman = "agentman.cli:main"
+
+[build-system]
+requires    = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+preview = true
+target-version = ["py310"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.tox
+  | \.venv
+  | \.history
+  | build
+  | dist
+  | docs
+  | hack
+  | venv
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.uv]
+package = true

@@ -1,1 +1,1 @@
-# fast-agent-builder
+# Agentman: A tool for managing agents
