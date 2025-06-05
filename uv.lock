@@ -20,7 +20,6 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "fast-agent-mcp" },
-    { name = "rich" },
 ]
 
 [package.optional-dependencies]
@@ -31,10 +30,9 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "black", marker = "extra == 'dev'", specifier = ">=22.0.0" },
+    { name = "black", marker = "extra == 'dev'", specifier = ">=25.1.0" },
     { name = "fast-agent-mcp", specifier = ">=0.2.28" },
-    { name = "isort", marker = "extra == 'dev'", specifier = ">=5.0.0" },
-    { name = "rich", specifier = ">=14.0.0" },
+    { name = "isort", marker = "extra == 'dev'", specifier = ">=6.0.1" },
 ]
 provides-extras = ["dev"]
 
