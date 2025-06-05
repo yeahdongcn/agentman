@@ -57,9 +57,19 @@ def build_cli(args):
 
 
 def build_parser(subparsers):
-    parser = subparsers.add_parser("build", help="Build an image using instructions from Agentfiles")
+    parser = subparsers.add_parser("build", help="Build an image from a Agentfile")
     runtime_options(parser, "build")
     parser.set_defaults(func=build_cli)
+
+
+def run_cli(args):
+    pass
+
+
+def run_parser(subparsers):
+    parser = subparsers.add_parser("run", help="Create and run a new container from an agent")
+    runtime_options(parser, "run")
+    parser.set_defaults(func=run_cli)
 
 
 def configure_subcommands(parser):
@@ -67,6 +77,7 @@ def configure_subcommands(parser):
     subparsers = parser.add_subparsers(dest="subcommand")
     subparsers.required = False
     build_parser(subparsers)
+    run_parser(subparsers)
 
 
 def parse_arguments(parser):
