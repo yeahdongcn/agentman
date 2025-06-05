@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 from agentman.common import perror
+from agentman.version import print_version
 
 
 class HelpException(Exception):
@@ -38,6 +39,7 @@ def configure_arguments(parser):
         action="store_true",
         help="display debug messages",
     )
+    verbosity_group.add_argument("--quiet", "-q", dest="quiet", action="store_true", help="reduce output.")
 
 
 def create_argument_parser(description):
@@ -74,12 +76,29 @@ def run_parser(subparsers):
     parser.set_defaults(func=run_cli)
 
 
+def version_parser(subparsers):
+    parser = subparsers.add_parser("version", help="Show the Agentman version information")
+    parser.set_defaults(func=print_version)
+
+
+def help_cli(args):
+    raise HelpException()
+
+
+def help_parser(subparsers):
+    parser = subparsers.add_parser("help")
+    # Do not run in a container
+    parser.set_defaults(func=help_cli)
+
+
 def configure_subcommands(parser):
     """Add subcommand parsers to the main argument parser."""
     subparsers = parser.add_subparsers(dest="subcommand")
     subparsers.required = False
     build_parser(subparsers)
     run_parser(subparsers)
+    help_parser(subparsers)
+    version_parser(subparsers)
 
 
 def parse_arguments(parser):
