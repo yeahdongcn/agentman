@@ -1,0 +1,28 @@
+# Chain Example Agentfile
+FROM yeahdongcn/agentman:base
+MODEL generic.qwen3:latest
+
+SECRET GENERIC
+API_KEY ollama
+BASE_URL http://host.docker.internal:11434/v1
+
+# Fetch MCP server for URL fetching
+MCP_SERVER fetch
+COMMAND uvx
+ARGS mcp-server-fetch
+TRANSPORT stdio
+
+# URL fetcher agent
+AGENT url_fetcher
+INSTRUCTION Given a URL, provide a complete and comprehensive summary
+SERVERS fetch
+
+# Social media post writer agent
+AGENT social_media
+INSTRUCTION Write a 280 character social media post for any given text. Respond only with the post, never use hashtags.
+
+# Chain that connects url_fetcher -> social_media
+CHAIN post_writer
+SEQUENCE url_fetcher social_media
+
+CMD ["python", "agent.py"]

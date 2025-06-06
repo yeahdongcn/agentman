@@ -1,4 +1,10 @@
+IMAGE_NAME ?= yeahdongcn/agentman:base
+
 default: run
+
+.PHONY: build-base-image
+build-base-image:
+	docker build -t $(IMAGE_NAME) --build-arg NODE_VERSION=22 -f docker/Dockerfile.base .
 
 .PHONY: build
 build:
@@ -18,3 +24,18 @@ check-format:
 format:
 	black */*/*.py
 	isort */*/*.py
+
+.PHONY: test
+test:
+	uv pip install -e .[test]
+	uv run pytest
+
+.PHONY: test-cov
+test-cov:
+	uv pip install -e .[test]
+	uv run pytest --cov=src/agentman --cov-report=term-missing --cov-report=html
+
+.PHONY: test-verbose
+test-verbose:
+	uv pip install -e .[test]
+	uv run pytest -v -s
