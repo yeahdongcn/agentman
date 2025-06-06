@@ -29,10 +29,6 @@ dev = [
     { name = "pytest" },
     { name = "pytest-cov" },
 ]
-test = [
-    { name = "pytest" },
-    { name = "pytest-cov" },
-]
 
 [package.metadata]
 requires-dist = [
@@ -40,11 +36,9 @@ requires-dist = [
     { name = "fast-agent-mcp", specifier = ">=0.2.28" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=6.0.1" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
-    { name = "pytest", marker = "extra == 'test'", specifier = ">=8.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
-    { name = "pytest-cov", marker = "extra == 'test'", specifier = ">=4.0.0" },
 ]
-provides-extras = ["dev", "test"]
+provides-extras = ["dev"]
 
 [[package]]
 name = "aiohappyeyeballs"

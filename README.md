@@ -370,7 +370,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 - **🤖 AI-Powered Development**: Almost entirely coded by Claude Sonnet 4 + AI Agents, demonstrating the future of collaborative human-AI software development
 - **🏗️ Built on [Fast-Agent](https://github.com/evalstate/fast-agent)**: This project heavily relies on the fast-agent framework as its foundation, providing the core agent infrastructure and MCP integration
-- Built on [FastAgent MCP](https://github.com/modelcontextprotocol/fast-agent-mcp)
 - Inspired by Docker's intuitive command-line interface
 - Comprehensive testing and documentation generated through AI assistance
 - Achieved 91%+ test coverage through AI-driven test generation

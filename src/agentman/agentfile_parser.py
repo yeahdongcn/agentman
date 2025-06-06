@@ -42,16 +42,13 @@ class Agent:
 
     def to_decorator_string(self, default_model: Optional[str] = None) -> str:
         """Generate the @fast.agent decorator string."""
-        params = []
-        params.append(f'name="{self.name}"')
-        params.append(f'instruction="""{self.instruction}"""')
+        params = [f'name="{self.name}"', f'instruction="""{self.instruction}"""']
 
         if self.servers:
             servers_str = "[" + ", ".join(f'"{s}"' for s in self.servers) + "]"
             params.append(f"servers={servers_str}")
 
-        model_to_use = self.model or default_model
-        if model_to_use:
+        if model_to_use := (self.model or default_model):
             params.append(f'model="{model_to_use}"')
 
         if not self.use_history:
@@ -74,15 +71,13 @@ class Router:
 
     def to_decorator_string(self, default_model: Optional[str] = None) -> str:
         """Generate the @fast.router decorator string."""
-        params = []
-        params.append(f'name="{self.name}"')
+        params = [f'name="{self.name}"']
 
         if self.agents:
             agents_str = "[" + ", ".join(f'"{a}"' for a in self.agents) + "]"
             params.append(f"agents={agents_str}")
 
-        model_to_use = self.model or default_model
-        if model_to_use:
+        if model_to_use := (self.model or default_model):
             params.append(f'model="{model_to_use}"')
 
         if self.instruction:
@@ -103,8 +98,7 @@ class Chain:
 
     def to_decorator_string(self) -> str:
         """Generate the @fast.chain decorator string."""
-        params = []
-        params.append(f'name="{self.name}"')
+        params = [f'name="{self.name}"']
 
         if self.sequence:
             sequence_str = "[" + ", ".join(f'"{a}"' for a in self.sequence) + "]"
@@ -585,6 +579,10 @@ class AgentfileParser:
             if len(parts) < 2:
                 raise ValueError("CUMULATIVE requires true/false")
             chain.cumulative = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
+        elif instruction == "CONTINUE_WITH_FINAL":
+            if len(parts) < 2:
+                raise ValueError("CONTINUE_WITH_FINAL requires true/false")
+            chain.continue_with_final = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
 
     def _handle_orchestrator_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions for ORCHESTRATOR context."""

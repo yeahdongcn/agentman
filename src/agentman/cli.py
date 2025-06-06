@@ -13,6 +13,29 @@ class HelpException(Exception):
     pass
 
 
+def resolve_context_path(path):
+    """Resolve and validate the build context path."""
+    context_path = Path(path).resolve()
+    if not context_path.exists():
+        perror(f"Build context path not found: {context_path}")
+        sys.exit(1)
+    if context_path.is_file():
+        context_path = context_path.parent
+    return context_path
+
+
+def safe_subprocess_run(cmd_args, check=True):
+    """Safely run subprocess with validated arguments."""
+    # Ensure all arguments are strings and properly escaped
+    safe_args = []
+    for arg in cmd_args:
+        if not isinstance(arg, str):
+            arg = str(arg)
+        safe_args.append(arg)
+
+    return subprocess.run(safe_args, check=check)
+
+
 class ArgumentParserWithDefaults(argparse.ArgumentParser):
     def add_argument(self, *args, help=None, default=None, completer=None, **kwargs):
         if help is not None:
@@ -55,21 +78,21 @@ def create_argument_parser(description):
 
 
 def runtime_options(parser, command):
+    """Configure runtime options for commands."""
+    # TODO: Implement runtime options configuration
+    pass
+
+
+def post_parse_setup(args):
+    """Perform post-parse setup operations."""
+    # TODO: Implement post-parse setup
     pass
 
 
 def build_cli(args):
     """Build agent files from an Agentfile."""
     # Determine the build context path
-    context_path = Path(args.path).resolve()
-
-    if not context_path.exists():
-        perror(f"Build context path not found: {context_path}")
-        sys.exit(1)
-
-    if context_path.is_file():
-        # If path is a file, use its parent directory as context
-        context_path = context_path.parent
+    context_path = resolve_context_path(args.path)
 
     # Construct the Agentfile path relative to context
     agentfile_path = context_path / args.file
@@ -90,7 +113,7 @@ def build_cli(args):
         if args.build_docker:
             print("\n🐳 Building Docker image...")
             docker_cmd = ["docker", "build", "-t", args.tag, str(output_dir)]
-            subprocess.run(docker_cmd, check=True)
+            safe_subprocess_run(docker_cmd, check=True)
             print(f"✅ Docker image built: {args.tag}")
 
     except Exception as e:
@@ -117,15 +140,7 @@ def run_cli(args):
     if args.from_agentfile:
         # Build first, then run
         # Determine the build context path
-        context_path = Path(args.path).resolve()
-
-        if not context_path.exists():
-            perror(f"Build context path not found: {context_path}")
-            sys.exit(1)
-
-        if context_path.is_file():
-            # If path is a file, use its parent directory as context
-            context_path = context_path.parent
+        context_path = resolve_context_path(args.path)
 
         # Construct the Agentfile path relative to context
         agentfile_path = context_path / args.file
@@ -140,17 +155,13 @@ def run_cli(args):
         else:
             output_dir = context_path / "agent"
 
-        if not agentfile_path.exists():
-            perror(f"Agentfile not found: {agentfile_path}")
-            sys.exit(1)
-
         try:
             print("🔨 Building agent files...")
             build_from_agentfile(str(agentfile_path), str(output_dir))
 
             print("\n🐳 Building Docker image...")
             docker_cmd = ["docker", "build", "-t", args.tag, str(output_dir)]
-            subprocess.run(docker_cmd, check=True)
+            safe_subprocess_run(docker_cmd, check=True)
 
             print("\n🚀 Running agent container...")
             run_cmd = ["docker", "run"]
@@ -181,7 +192,7 @@ def run_cli(args):
             if args.command:
                 run_cmd.extend(args.command)
 
-            subprocess.run(run_cmd, check=True)
+            safe_subprocess_run(run_cmd, check=True)
 
         except Exception as e:
             perror(f"Run failed: {e}")
@@ -218,7 +229,7 @@ def run_cli(args):
             run_cmd.extend(args.command)
 
         try:
-            subprocess.run(run_cmd, check=True)
+            safe_subprocess_run(run_cmd, check=True)
         except Exception as e:
             perror(f"Run failed: {e}")
             sys.exit(1)
@@ -279,10 +290,6 @@ def configure_subcommands(parser):
 def parse_arguments(parser):
     """Parse command line arguments."""
     return parser.parse_args()
-
-
-def post_parse_setup(args):
-    pass
 
 
 def init_cli():

@@ -266,9 +266,9 @@ class AgentBuilder:
 
         # Expose ports
         if self.config.expose_ports:
-            for port in self.config.expose_ports:
-                lines.append(f"EXPOSE {port}")
-            lines.append("")
+            expose_lines = [f"EXPOSE {port}" for port in self.config.expose_ports]
+            expose_lines.append("")
+            lines.extend(expose_lines)
 
         # Default command
         cmd_str = '["' + '", "'.join(self.config.cmd) + '"]'
@@ -291,7 +291,7 @@ class AgentBuilder:
             "filesystem": [],  # Built into fast-agent
             "brave": ["requests"],
             "postgres": ["psycopg2-binary"],
-            "sqlite": ["sqlite3"],  # Built into Python
+            "sqlite": [],  # Built into Python
         }
 
         for server_name in self.config.servers.keys():
