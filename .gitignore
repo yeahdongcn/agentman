@@ -6,3 +6,10 @@ eggs/
 .eggs/
 *.egg-info/
 *.egg
+
+# Testing
+htmlcov/
+.coverage
+
+# Generated files
+agent/
