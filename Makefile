@@ -4,7 +4,11 @@ default: run
 
 .PHONY: build-base-image
 build-base-image:
-	docker build -t $(IMAGE_NAME) --build-arg NODE_VERSION=22 -f docker/Dockerfile.base .
+	docker buildx build --platform linux/amd64,linux/arm64 \
+		--build-arg NODE_VERSION=22 \
+		--tag $(IMAGE_NAME) \
+		-f docker/Dockerfile.base \
+		--push .
 
 .PHONY: build
 build:
