@@ -65,6 +65,8 @@ agentman run --from-agentfile -t my-agent .
 
 3. **Your AI agent is now running!** 🎉
 
+[![Demo](https://img.youtube.com/vi/P4bRllSbNX8/0.jpg)](https://www.youtube.com/watch?v=P4bRllSbNX8)
+
 ## 📖 Detailed Usage
 
 ### Building Agents
