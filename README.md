@@ -1,4 +1,4 @@
-# 🤖 Agentman: AI Agent Development Made Simple
+# 🤖 Agentman: A tool for building and managing AI agents
 
 Agentman is a powerful Docker-like tool for building, managing, and deploying AI agents using the Model Context Protocol (MCP). With its intuitive `Agentfile` syntax, you can define complex multi-agent workflows and deploy them as containerized applications with a single command.
 
@@ -370,6 +370,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 - **🤖 AI-Powered Development**: Almost entirely coded by Claude Sonnet 4 + AI Agents, demonstrating the future of collaborative human-AI software development
 - **🏗️ Built on [Fast-Agent](https://github.com/evalstate/fast-agent)**: This project heavily relies on the fast-agent framework as its foundation, providing the core agent infrastructure and MCP integration
+- **🐳 Inspired by [Podman](https://github.com/containers/podman)**: The name "Agentman" is inspired by Podman, the container engine that provides a Docker-compatible command-line interface. Like Podman for containers, Agentman aims to provide an intuitive, powerful CLI for AI agent management
 - Inspired by Docker's intuitive command-line interface
 - Comprehensive testing and documentation generated through AI assistance
 - Achieved 91%+ test coverage through AI-driven test generation
