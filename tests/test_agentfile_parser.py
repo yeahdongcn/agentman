@@ -141,6 +141,43 @@ EXPOSE 8080
         assert config.default_model == "anthropic/claude-3-sonnet-20241022"
         assert config.expose_ports == [8080]
 
+    def test_parse_content_with_secret_context_arbitrary_name(self):
+        """Test parsing secret context with arbitrary names like 'openai'."""
+        content = """
+FROM yeahdongcn/agentman:base
+MODEL generic.qwen3:latest
+
+SECRET openai
+API_KEY sk-test123
+BASE_URL https://api.openai.com/v1
+
+SECRET anthropic
+API_KEY claude-key
+"""
+        config = self.parser.parse_content(content)
+
+        assert len(config.secrets) == 2
+
+        # Find openai secret context
+        openai_secret = None
+        anthropic_secret = None
+        for secret in config.secrets:
+            if isinstance(secret, SecretContext):
+                if secret.name == "openai":
+                    openai_secret = secret
+                elif secret.name == "anthropic":
+                    anthropic_secret = secret
+
+        assert openai_secret is not None
+        assert anthropic_secret is not None
+
+        # Check openai secret values
+        assert openai_secret.values["API_KEY"] == "sk-test123"
+        assert openai_secret.values["BASE_URL"] == "https://api.openai.com/v1"
+
+        # Check anthropic secret values
+        assert anthropic_secret.values["API_KEY"] == "claude-key"
+
 
 class TestDataClasses:
     """Test suite for data classes used by AgentfileParser."""

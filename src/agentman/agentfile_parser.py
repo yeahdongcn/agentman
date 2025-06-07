@@ -380,7 +380,7 @@ class AgentfileParser:
         Supports multiple formats:
         - SECRET ANTHROPIC_API_KEY (simple reference)
         - SECRET ANTHROPIC_API_KEY <<real_api_key>> (inline value)
-        - SECRET GENERIC (context for multiple values)
+        - SECRET openai (context for multiple values)
         """
         if len(parts) < 2:
             raise ValueError("SECRET requires a secret name")
@@ -395,21 +395,12 @@ class AgentfileParser:
             self.current_context = None
         # Check if it's a context (no value, will be populated with sub-instructions)
         elif len(parts) == 2:
-            # Check if this is meant to be a context by looking ahead or if it's a simple reference
-            # For now, treat single names as contexts if they match known patterns
-            if secret_name.upper() in ['GENERIC', 'CUSTOM', 'SERVER', 'PROVIDER']:
-                secret = SecretContext(name=secret_name)
-                self.config.secrets.append(secret)
-                self.current_context = "secret"
-                self.current_item = secret_name
-            else:
-                # Simple secret reference - check if it already exists
-                if not any(
-                    isinstance(s, str) and s == secret_name or hasattr(s, 'name') and s.name == secret_name
-                    for s in self.config.secrets
-                ):
-                    self.config.secrets.append(secret_name)
-                self.current_context = None
+            # Create a secret context - this will be used if subsequent lines contain key-value pairs
+            # If no key-value pairs follow, it will be treated as a simple reference
+            secret = SecretContext(name=secret_name)
+            self.config.secrets.append(secret)
+            self.current_context = "secret"
+            self.current_item = secret_name
         else:
             raise ValueError("Invalid SECRET format. Use: SECRET NAME or SECRET NAME value")
 

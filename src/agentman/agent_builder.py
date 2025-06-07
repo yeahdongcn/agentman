@@ -147,6 +147,10 @@ class AgentBuilder:
             if "azure" not in secrets_data:
                 secrets_data["azure"] = {}
             secrets_data["azure"]["api_key"] = "<your-azure-api-key-here>"
+        elif secret == "ALIYUN_OPENAI_API_KEY":
+            if "aliyun" not in secrets_data:
+                secrets_data["aliyun"] = {}
+            secrets_data["aliyun"]["api_key"] = "<your-aliyun-api-key-here>"
         else:
             # Handle server-specific environment variables
             server_found = False
@@ -181,6 +185,10 @@ class AgentBuilder:
             if "azure" not in secrets_data:
                 secrets_data["azure"] = {}
             secrets_data["azure"]["api_key"] = secret_value
+        elif secret_name == "ALIYUN_OPENAI_API_KEY":
+            if "aliyun" not in secrets_data:
+                secrets_data["aliyun"] = {}
+            secrets_data["aliyun"]["api_key"] = secret_value
         else:
             # Handle server-specific environment variables
             server_found = False
