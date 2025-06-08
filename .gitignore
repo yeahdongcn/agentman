@@ -6,6 +6,7 @@ eggs/
 .eggs/
 *.egg-info/
 *.egg
+dist/
 
 # Testing
 htmlcov/

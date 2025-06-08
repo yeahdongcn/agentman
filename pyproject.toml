@@ -1,16 +1,42 @@
 [project]
 name = "agentman"
 version = "0.1.0"
-description = ""
+description = "A tool for building and managing AI agents"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [
+    { name = "Xiaodong Ye", email = "yeahdongcn@gmail.com" },
+]
+maintainers = [
     { name = "Xiaodong Ye", email = "yeahdongcn@gmail.com" },
 ]
 requires-python = ">=3.10"
 dependencies = [
     "fast-agent-mcp>=0.2.28",
 ]
+keywords = ["ai", "agents", "mcp", "model-context-protocol", "docker", "containerization", "automation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://github.com/yeahdongcn/agentman"
+Documentation = "https://github.com/yeahdongcn/agentman#readme"
+Repository = "https://github.com/yeahdongcn/agentman.git"
+Issues = "https://github.com/yeahdongcn/agentman/issues"
+Changelog = "https://github.com/yeahdongcn/agentman/releases"
 
 [project.optional-dependencies]
 dev = [
@@ -18,6 +44,10 @@ dev = [
     "isort>=6.0.1",
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
+]
+publish = [
+    "build>=1.0.0",
+    "twine>=5.0.0",
 ]
 
 [project.scripts]

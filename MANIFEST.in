@@ -1,0 +1,8 @@
+# Include additional files in the package
+include README.md
+include LICENSE
+include PUBLISHING.md
+recursive-include src/agentman *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * .DS_Store

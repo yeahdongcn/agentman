@@ -1,0 +1,17 @@
+# .pypirc template for manual publishing
+# Copy this to ~/.pypirc and update with your credentials if using manual publishing
+
+[distutils]
+index-servers =
+    pypi
+    testpypi
+
+[pypi]
+repository = https://upload.pypi.org/legacy/
+username = __token__
+# password = your-pypi-api-token
+
+[testpypi]
+repository = https://test.pypi.org/legacy/
+username = __token__
+# password = your-testpypi-api-token

@@ -1,8 +1,18 @@
 # 🤖 Agentman: A tool for building and managing AI agents
 
+[![PyPI version](https://img.shields.io/pypi/v/agentman.svg)](https://pypi.org/project/agentman/)
+[![Python versions](https://img.shields.io/pypi/pyversions/agentman.svg)](https://pypi.org/project/agentman/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Agentman is a powerful Docker-like tool for building, managing, and deploying AI agents using the Model Context Protocol (MCP). With its intuitive `Agentfile` syntax, you can define complex multi-agent workflows and deploy them as containerized applications with a single command.
 
 > 🤖 **AI-Driven Development**: This project is almost entirely coded by Claude Sonnet 4 + AI Agents, showcasing the power of AI-assisted software development. From architecture design to comprehensive testing, AI has been the primary developer, demonstrating the future of collaborative human-AI programming.
+
+## 📦 Installation
+
+```bash
+pip install agentman
+```
 
 ## ✨ Features
 

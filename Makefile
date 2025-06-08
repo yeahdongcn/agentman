@@ -2,20 +2,20 @@ IMAGE_NAME ?= yeahdongcn/agentman:base
 
 default: run
 
-.PHONY: build-base-image
-build-base-image:
+.PHONY: publish-base-image
+publish-base-image:
 	docker buildx build --platform linux/amd64,linux/arm64 \
 		--build-arg NODE_VERSION=22 \
 		--tag $(IMAGE_NAME) \
 		-f docker/Dockerfile.base \
 		--push .
 
-.PHONY: build
-build:
+.PHONY: install
+install:
 	uv pip install -e .
 
 .PHONY: run
-run: build
+run: install
 	uv run agentman
 
 .PHONY: check-format
@@ -43,3 +43,20 @@ test-cov:
 test-verbose:
 	uv pip install -e .[test]
 	uv run pytest -v -s
+
+# Publishing targets
+.PHONY: build publish-test publish-prod clean-build
+
+build: ## Build the package
+	@./scripts/build.sh
+
+publish-test: build ## Publish to TestPyPI
+	@./scripts/publish.sh testpypi
+
+publish-prod: build ## Publish to PyPI
+	@./scripts/publish.sh pypi
+
+clean-build: ## Clean build artifacts
+	@echo "🧹 Cleaning build artifacts..."
+	@rm -rf dist/ build/ src/*.egg-info/
+	@echo "✅ Build artifacts cleaned"
