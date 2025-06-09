@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/agentman-mcp.svg)](https://pypi.org/project/agentman-mcp/)
 [![Python versions](https://img.shields.io/pypi/pyversions/agentman-mcp.svg)](https://pypi.org/project/agentman-mcp/)
 [![GitHub Issues](https://img.shields.io/github/issues/yeahdongcn/agentman.svg)](https://github.com/yeahdongcn/agentman/issues)
-[![PyPI Downloads](https://static.pepy.tech/badge/agentman-mcp)](https://pepy.tech/projects/agentman-mcp)
+[![Pepy Total Downloads](https://img.shields.io/pepy/dt/agentman-mcp?label=pypi%20%7C%20downloads)](https://pepy.tech/projects/agentman-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Agentman is a powerful Docker-like tool for building, managing, and deploying AI agents using the Model Context Protocol (MCP). With its intuitive `Agentfile` syntax, you can define complex multi-agent workflows and deploy them as containerized applications with a single command.
