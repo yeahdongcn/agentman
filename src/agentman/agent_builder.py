@@ -147,7 +147,7 @@ class AgentBuilder:
             if "azure" not in secrets_data:
                 secrets_data["azure"] = {}
             secrets_data["azure"]["api_key"] = "<your-azure-api-key-here>"
-        elif secret == "ALIYUN_OPENAI_API_KEY":
+        elif secret == "ALIYUN_API_KEY":
             if "aliyun" not in secrets_data:
                 secrets_data["aliyun"] = {}
             secrets_data["aliyun"]["api_key"] = "<your-aliyun-api-key-here>"
@@ -185,7 +185,7 @@ class AgentBuilder:
             if "azure" not in secrets_data:
                 secrets_data["azure"] = {}
             secrets_data["azure"]["api_key"] = secret_value
-        elif secret_name == "ALIYUN_OPENAI_API_KEY":
+        elif secret_name == "ALIYUN_API_KEY":
             if "aliyun" not in secrets_data:
                 secrets_data["aliyun"] = {}
             secrets_data["aliyun"]["api_key"] = secret_value
@@ -289,7 +289,7 @@ class AgentBuilder:
     def _generate_requirements_txt(self):
         """Generate the requirements.txt file."""
         requirements = [
-            "fast-agent-mcp>=0.2.28",
+            "fast-agent-mcp>=0.2.30",
             "deprecated>=1.2.18",
         ]
 

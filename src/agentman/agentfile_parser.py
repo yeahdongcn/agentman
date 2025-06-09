@@ -255,6 +255,8 @@ class AgentfileParser:
             self._handle_expose(parts)
         elif instruction == "CMD":
             self._handle_cmd(parts)
+        elif instruction == "RUN":
+            self._handle_run(parts)
         elif instruction in [
             "COMMAND",
             "ARGS",
@@ -454,6 +456,9 @@ class AgentfileParser:
             # Simple format: CMD python agent.py
             self.config.cmd = [self._unquote(part) for part in parts[1:]]
         self.current_context = None
+
+    def _handle_run(self, parts: List[str]):
+        pass
 
     def _handle_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions that modify the current context item."""
