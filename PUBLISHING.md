@@ -90,10 +90,10 @@ After publishing to TestPyPI, test the installation:
 
 ```bash
 # Install from TestPyPI
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ agentman
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ agentman-mcp
 
 # Install from PyPI (after production release)
-pip install agentman
+pip install agentman-mcp
 ```
 
 ## Troubleshooting

@@ -58,8 +58,8 @@ Before publishing your package to PyPI, make sure you've completed these steps:
 ## Post-Publishing
 
 ### Verify Your Package
-1. Check package page on PyPI: https://pypi.org/project/agentman/
-2. Install in a clean environment: `pip install agentman`
+1. Check package page on PyPI: https://pypi.org/project/agentman-mcp/
+2. Install in a clean environment: `pip install agentman-mcp`
 3. Test the installed package works correctly
 4. Update project documentation with installation instructions
 

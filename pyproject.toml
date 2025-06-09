@@ -1,5 +1,5 @@
 [project]
-name = "agentman"
+name = "agentman-mcp"
 version = "0.1.0"
 description = "A tool for building and managing AI agents"
 readme = "README.md"

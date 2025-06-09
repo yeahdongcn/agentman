@@ -31,17 +31,17 @@ format:
 
 .PHONY: test
 test:
-	uv pip install -e .[test]
+	uv pip install -e .[dev]
 	uv run pytest
 
 .PHONY: test-cov
 test-cov:
-	uv pip install -e .[test]
+	uv pip install -e .[dev]
 	uv run pytest --cov=src/agentman --cov-report=term-missing --cov-report=html
 
 .PHONY: test-verbose
 test-verbose:
-	uv pip install -e .[test]
+	uv pip install -e .[dev]
 	uv run pytest -v -s
 
 # Publishing targets

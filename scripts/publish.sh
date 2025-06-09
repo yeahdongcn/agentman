@@ -47,5 +47,5 @@ if [ "$TARGET" = "testpypi" ]; then
 elif [ "$TARGET" = "pypi" ]; then
     echo ""
     echo "🎉 Package is now available on PyPI:"
-    echo "pip install agentman"
+    echo "pip install agentman-mcp"
 fi
