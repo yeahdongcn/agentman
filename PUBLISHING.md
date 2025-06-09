@@ -81,7 +81,7 @@ Before publishing, update the version in `pyproject.toml`:
 ```toml
 [project]
 name = "agentman"
-version = "0.1.1"  # Update this
+version = "2"  # Update this
 ```
 
 ## Installation Testing
