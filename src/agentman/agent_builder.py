@@ -223,7 +223,8 @@ class AgentBuilder:
         # Start with FROM instruction
         lines.extend([f"FROM {self.config.base_image}", ""])
 
-        # Add all other Dockerfile instructions in order (except FROM, EXPOSE, CMD which are handled specially)
+        # Add all other Dockerfile instructions in order (except FROM)
+        # We'll handle EXPOSE and CMD at the end in their proper positions
         for instruction in self.config.dockerfile_instructions:
             if instruction.instruction not in ["FROM", "EXPOSE", "CMD"]:
                 lines.append(instruction.to_dockerfile_line())
@@ -258,15 +259,30 @@ class AgentBuilder:
             ]
         )
 
-        # Expose ports
-        if self.config.expose_ports:
-            expose_lines = [f"EXPOSE {port}" for port in self.config.expose_ports]
-            expose_lines.append("")
-            lines.extend(expose_lines)
+        # Add EXPOSE instructions from custom dockerfile instructions first
+        expose_instructions = [inst for inst in self.config.dockerfile_instructions if inst.instruction == "EXPOSE"]
+        if expose_instructions:
+            for instruction in expose_instructions:
+                lines.append(instruction.to_dockerfile_line())
+            lines.append("")
 
-        # Default command
-        cmd_str = '["' + '", "'.join(self.config.cmd) + '"]'
-        lines.append(f"CMD {cmd_str}")
+        # Add EXPOSE from config.expose_ports if not already handled
+        if self.config.expose_ports and not expose_instructions:
+            expose_lines = [f"EXPOSE {port}" for port in self.config.expose_ports]
+            lines.extend(expose_lines)
+            lines.append("")
+
+        # Add CMD instructions from custom dockerfile instructions first
+        cmd_instructions = [inst for inst in self.config.dockerfile_instructions if inst.instruction == "CMD"]
+        if cmd_instructions:
+            for instruction in cmd_instructions:
+                lines.append(instruction.to_dockerfile_line())
+        elif self.config.cmd:
+            # Default command from config
+            import json
+
+            cmd_str = json.dumps(self.config.cmd)
+            lines.append(f"CMD {cmd_str}")
 
         dockerfile = self.output_dir / "Dockerfile"
         with open(dockerfile, 'w') as f:

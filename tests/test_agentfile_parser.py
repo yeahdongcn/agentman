@@ -178,6 +178,17 @@ API_KEY claude-key
         # Check anthropic secret values
         assert anthropic_secret.values["API_KEY"] == "claude-key"
 
+    def _find_instruction_by_type(self, instructions, instruction_type):
+        """Helper function to find instruction by type."""
+        return next(
+            (
+                instruction
+                for instruction in instructions
+                if instruction.instruction == instruction_type
+            ),
+            None,
+        )
+
     def test_parse_run_instruction_single_line(self):
         """Test parsing single-line RUN instruction."""
         content = """
@@ -190,11 +201,7 @@ RUN apt-get update
         assert len(config.dockerfile_instructions) == 2  # FROM and RUN
 
         # Find the RUN instruction
-        run_instruction = None
-        for instruction in config.dockerfile_instructions:
-            if instruction.instruction == "RUN":
-                run_instruction = instruction
-                break
+        run_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "RUN")
 
         assert run_instruction is not None
         assert run_instruction.instruction == "RUN"
@@ -216,11 +223,7 @@ RUN apt-get update && apt-get install -y \\
         assert len(config.dockerfile_instructions) == 2  # FROM and RUN
 
         # Find the RUN instruction
-        run_instruction = None
-        for instruction in config.dockerfile_instructions:
-            if instruction.instruction == "RUN":
-                run_instruction = instruction
-                break
+        run_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "RUN")
 
         assert run_instruction is not None
         assert run_instruction.instruction == "RUN"
@@ -248,11 +251,7 @@ RUN apt-get update && apt-get install -y \\
         assert len(config.dockerfile_instructions) == 2  # FROM and RUN
 
         # Find the RUN instruction
-        run_instruction = None
-        for instruction in config.dockerfile_instructions:
-            if instruction.instruction == "RUN":
-                run_instruction = instruction
-                break
+        run_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "RUN")
 
         assert run_instruction is not None
         assert run_instruction.instruction == "RUN"
@@ -261,6 +260,13 @@ RUN apt-get update && apt-get install -y \\
         expected_command = "apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*"
         actual_command = " ".join(run_instruction.args)
         assert actual_command == expected_command
+
+    def _validate_instruction(self, instructions, index, expected_instruction, expected_args):
+        """Helper function to validate a specific instruction."""
+        actual = instructions[index]
+        assert actual.instruction == expected_instruction
+        if expected_instruction != "CMD":  # CMD has special handling
+            assert actual.args == expected_args
 
     def test_parse_multiple_dockerfile_instructions(self):
         """Test parsing multiple Dockerfile instructions with RUN."""
@@ -287,19 +293,14 @@ CMD ["python", "app.py"]
             ("COPY", [".", "."]),
             ("RUN", ["pip", "install", "-r", "requirements.txt"]),
             ("EXPOSE", ["8080"]),
-            ("CMD", ["[\"python\",", "\"app.py\"]"])
+            ("CMD", ["python", "app.py"])
         ]
 
         assert len(config.dockerfile_instructions) == len(expected_instructions)
 
+        # Validate each instruction using helper
         for i, (expected_instruction, expected_args) in enumerate(expected_instructions):
-            actual = config.dockerfile_instructions[i]
-            assert actual.instruction == expected_instruction
-            if expected_instruction == "CMD":
-                # CMD has special handling in the parser
-                continue
-            else:
-                assert actual.args == expected_args
+            self._validate_instruction(config.dockerfile_instructions, i, expected_instruction, expected_args)
 
     def test_parse_content_with_unknown_instruction(self):
         """Test parsing content with an unknown instruction (should be treated as Dockerfile instruction)."""
@@ -312,11 +313,7 @@ UNKNOWN INSTRUCTION args
         # Unknown instructions should be treated as Dockerfile instructions
         assert len(config.dockerfile_instructions) == 2  # FROM and UNKNOWN
 
-        unknown_instruction = None
-        for instruction in config.dockerfile_instructions:
-            if instruction.instruction == "UNKNOWN":
-                unknown_instruction = instruction
-                break
+        unknown_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "UNKNOWN")
 
         assert unknown_instruction is not None
         assert unknown_instruction.instruction == "UNKNOWN"

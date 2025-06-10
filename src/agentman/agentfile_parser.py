@@ -187,10 +187,11 @@ class DockerfileInstruction:
         """Convert to Dockerfile line format."""
         if self.instruction in ["CMD", "ENTRYPOINT"] and len(self.args) > 1:
             # Handle array format for CMD/ENTRYPOINT
-            args_str = '["' + '", "'.join(self.args) + '"]'
+            import json
+
+            args_str = json.dumps(self.args)
             return f"{self.instruction} {args_str}"
-        else:
-            return f"{self.instruction} {' '.join(self.args)}"
+        return f"{self.instruction} {' '.join(self.args)}"
 
 
 @dataclass
@@ -231,6 +232,7 @@ class AgentfileParser:
         # Pre-process lines to handle multi-line continuations with backslash
         processed_lines = []
         current_line = ""
+        continued_start_line_num = None
 
         for line_num, line in enumerate(lines, 1):
             line = line.rstrip()  # Remove trailing whitespace but keep leading
@@ -242,17 +244,29 @@ class AgentfileParser:
             # Check for line continuation
             if line.endswith('\\'):
                 # Remove the backslash and add to current line with a space
-                current_line += line[:-1].rstrip() + " "
+                if not current_line:
+                    # This is the start of a new continued line, so record the starting line number
+                    continued_start_line_num = line_num
+                current_line += f"{line[:-1].rstrip()} "
             else:
                 # Complete the line
                 current_line += line
                 if current_line.strip():  # Only add non-empty lines
-                    processed_lines.append((line_num, current_line.strip()))
+                    # Use the real start line number for continued instructions
+                    if continued_start_line_num is not None:
+                        processed_lines.append((continued_start_line_num, current_line.strip()))
+                        continued_start_line_num = None
+                    else:
+                        processed_lines.append((line_num, current_line.strip()))
                 current_line = ""
 
         # Handle any remaining line (shouldn't happen with proper syntax)
         if current_line.strip():
-            processed_lines.append((len(lines), current_line.strip()))
+            # Use the real start line number for continued instructions if present
+            if continued_start_line_num is not None:
+                processed_lines.append((continued_start_line_num, current_line.strip()))
+            else:
+                processed_lines.append((len(lines), current_line.strip()))
 
         # Parse each processed line
         for line_num, line in processed_lines:
@@ -296,7 +310,9 @@ class AgentfileParser:
             self._handle_dockerfile_instruction(instruction, parts)
         elif instruction == "CMD":
             self._handle_cmd(parts)
-            self._handle_dockerfile_instruction(instruction, parts)
+            # Store the CMD instruction with the correctly parsed args
+            dockerfile_instruction = DockerfileInstruction(instruction="CMD", args=self.config.cmd)
+            self.config.dockerfile_instructions.append(dockerfile_instruction)
         elif instruction == "RUN":
             self._handle_dockerfile_instruction(instruction, parts)
         # All other Dockerfile instructions - store as-is
@@ -470,11 +486,14 @@ class AgentfileParser:
         # Check if it's a context (no value, will be populated with sub-instructions)
         elif len(parts) == 2:
             # Check if a secret context with this name already exists
-            existing_secret = None
-            for secret in self.config.secrets:
-                if isinstance(secret, SecretContext) and secret.name == secret_name:
-                    existing_secret = secret
-                    break
+            existing_secret = next(
+                (
+                    secret
+                    for secret in self.config.secrets
+                    if isinstance(secret, SecretContext) and secret.name == secret_name
+                ),
+                None,
+            )
 
             if existing_secret:
                 # Reuse existing secret context
