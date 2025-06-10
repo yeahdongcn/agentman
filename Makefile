@@ -1,6 +1,6 @@
-IMAGE_NAME ?= yeahdongcn/agentman:base
+IMAGE_NAME ?= yeahdongcn/agentman-base:latest
 
-default: run
+default: install
 
 .PHONY: publish-base-image
 publish-base-image:

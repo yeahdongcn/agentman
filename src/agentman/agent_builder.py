@@ -220,37 +220,33 @@ class AgentBuilder:
         """Generate the Dockerfile."""
         lines = []
 
-        # Base image
-        if self.config.base_image == "fast-agent:latest":
-            # Use Python base and install fast-agent
-            lines.extend(
-                [
-                    "FROM python:3.11-slim",
-                    "",
-                    "# Install system dependencies",
-                    "RUN apt-get update && apt-get install -y \\",
-                    "    nodejs \\",
-                    "    npm \\",
-                    "    && rm -rf /var/lib/apt/lists/*",
-                    "",
-                    "# Set working directory",
-                    "WORKDIR /app",
-                    "",
-                    "# Copy requirements and install Python dependencies",
-                    "COPY requirements.txt .",
-                    "RUN pip install --no-cache-dir -r requirements.txt",
-                    "",
-                ]
-            )
-        else:
-            lines.extend(
-                [
-                    f"FROM {self.config.base_image}",
-                    "",
-                    "WORKDIR /app",
-                    "",
-                ]
-            )
+        # Start with FROM instruction
+        lines.extend([f"FROM {self.config.base_image}", ""])
+
+        # Add all other Dockerfile instructions in order (except FROM)
+        # We'll handle EXPOSE and CMD at the end in their proper positions
+        for instruction in self.config.dockerfile_instructions:
+            if instruction.instruction not in ["FROM", "EXPOSE", "CMD"]:
+                lines.append(instruction.to_dockerfile_line())
+
+        # Add a blank line if we have custom instructions
+        if any(inst.instruction not in ["FROM", "EXPOSE", "CMD"] for inst in self.config.dockerfile_instructions):
+            lines.append("")
+
+        # Set working directory if not already set by custom instructions
+        workdir_set = any(inst.instruction == "WORKDIR" for inst in self.config.dockerfile_instructions)
+        if not workdir_set:
+            lines.extend(["WORKDIR /app", ""])
+
+        # Copy requirements and install Python dependencies
+        lines.extend(
+            [
+                "# Copy requirements and install Python dependencies",
+                "COPY requirements.txt .",
+                "RUN pip install --no-cache-dir -r requirements.txt",
+                "",
+            ]
+        )
 
         # Copy application files
         lines.extend(
@@ -263,24 +259,30 @@ class AgentBuilder:
             ]
         )
 
-        lines.extend(
-            [
-                "# Copy requirements and install Python dependencies",
-                "COPY requirements.txt .",
-                "RUN pip install --no-cache-dir -r requirements.txt",
-                "",
-            ]
-        )
+        # Add EXPOSE instructions from custom dockerfile instructions first
+        expose_instructions = [inst for inst in self.config.dockerfile_instructions if inst.instruction == "EXPOSE"]
+        if expose_instructions:
+            for instruction in expose_instructions:
+                lines.append(instruction.to_dockerfile_line())
+            lines.append("")
 
-        # Expose ports
-        if self.config.expose_ports:
+        # Add EXPOSE from config.expose_ports if not already handled
+        if self.config.expose_ports and not expose_instructions:
             expose_lines = [f"EXPOSE {port}" for port in self.config.expose_ports]
-            expose_lines.append("")
             lines.extend(expose_lines)
+            lines.append("")
 
-        # Default command
-        cmd_str = '["' + '", "'.join(self.config.cmd) + '"]'
-        lines.append(f"CMD {cmd_str}")
+        # Add CMD instructions from custom dockerfile instructions first
+        cmd_instructions = [inst for inst in self.config.dockerfile_instructions if inst.instruction == "CMD"]
+        if cmd_instructions:
+            for instruction in cmd_instructions:
+                lines.append(instruction.to_dockerfile_line())
+        elif self.config.cmd:
+            # Default command from config
+            import json
+
+            cmd_str = json.dumps(self.config.cmd)
+            lines.append(f"CMD {cmd_str}")
 
         dockerfile = self.output_dir / "Dockerfile"
         with open(dockerfile, 'w') as f:
