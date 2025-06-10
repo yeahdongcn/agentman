@@ -41,7 +41,7 @@ Create a simple URL-to-social-media agent in 3 steps:
 1. **Create an Agentfile:**
 ```dockerfile
 # Agentfile
-FROM yeahdongcn/agentman:base
+FROM yeahdongcn/agentman-base:latest
 MODEL generic.qwen3:latest
 
 SECRET GENERIC
@@ -127,10 +127,10 @@ agentman run --rm my-agent:latest
 ### Base Configuration
 
 ```dockerfile
-FROM yeahdongcn/agentman:base     # Base image
-MODEL anthropic/claude-3-sonnet   # Default model for agents
-EXPOSE 8080                       # Expose ports
-CMD ["python", "agent.py"]        # Container startup command
+FROM yeahdongcn/agentman-base:latest   # Base image
+MODEL anthropic/claude-3-sonnet        # Default model for agents
+EXPOSE 8080                            # Expose ports
+CMD ["python", "agent.py"]             # Container startup command
 ```
 
 ### MCP Servers
@@ -200,7 +200,7 @@ TIMEOUT 30
 
 ### 1. Content Processing Pipeline
 ```dockerfile
-FROM yeahdongcn/agentman:base
+FROM yeahdongcn/agentman-base:latest
 MODEL anthropic/claude-3-sonnet
 
 MCP_SERVER brave
@@ -223,7 +223,7 @@ SEQUENCE researcher writer editor
 
 ### 2. Customer Support System
 ```dockerfile
-FROM yeahdongcn/agentman:base
+FROM yeahdongcn/agentman-base:latest
 MODEL anthropic/claude-3-haiku
 
 MCP_SERVER database
@@ -249,7 +249,7 @@ INSTRUCTION Route based on inquiry complexity and urgency
 
 ### 3. Data Analysis Workflow
 ```dockerfile
-FROM yeahdongcn/agentman:base
+FROM yeahdongcn/agentman-base:latest
 MODEL anthropic/claude-3-sonnet
 
 MCP_SERVER filesystem

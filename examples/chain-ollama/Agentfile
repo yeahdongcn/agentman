@@ -1,5 +1,5 @@
 # Chain Example Agentfile
-FROM yeahdongcn/agentman:base
+FROM yeahdongcn/agentman-base:latest
 MODEL generic.qwen3:latest
 
 SECRET GENERIC

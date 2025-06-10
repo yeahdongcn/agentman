@@ -52,7 +52,7 @@ class ArgumentParserWithDefaults(argparse.ArgumentParser):
 
 def get_description():
     return """\
-Manage agents
+A tool for building and managing AI agents
 """
 
 

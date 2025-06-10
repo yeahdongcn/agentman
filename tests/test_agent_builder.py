@@ -36,7 +36,7 @@ class TestAgentBuilder:
     def setup_method(self):
         """Set up test fixtures."""
         self.config = AgentfileConfig()
-        self.config.base_image = "yeahdongcn/agentman:base"
+        self.config.base_image = "yeahdongcn/agentman-base:latest"
         self.config.default_model = "generic.qwen3:latest"
         self.config.cmd = ["python", "agent.py"]
 
@@ -311,7 +311,7 @@ class TestAgentBuilder:
             with open(dockerfile, 'r') as f:
                 content = f.read()
 
-            assert "FROM yeahdongcn/agentman:base" in content
+            assert "FROM yeahdongcn/agentman-base:latest" in content
             assert "WORKDIR /app" in content
             assert 'CMD ["python", "agent.py"]' in content
 
@@ -331,8 +331,8 @@ class TestAgentBuilder:
             assert "EXPOSE 8080" in content
 
     def test_generate_dockerfile_fast_agent_base(self):
-        """Test Dockerfile generation with fast-agent:latest base."""
-        self.config.base_image = "fast-agent:latest"
+        """Test Dockerfile generation with yeahdongcn/agentman-base:latest base."""
+        self.config.base_image = "yeahdongcn/agentman-base:latest"
 
         with tempfile.TemporaryDirectory() as temp_dir:
             builder = AgentBuilder(self.config, temp_dir)
@@ -342,9 +342,9 @@ class TestAgentBuilder:
             with open(dockerfile, 'r') as f:
                 content = f.read()
 
-            assert "FROM python:3.11-slim" in content
-            assert "apt-get update" in content
-            assert "nodejs" in content
+            assert "FROM yeahdongcn/agentman-base:latest" in content
+            assert "COPY agent.py" in content
+            assert "RUN pip install" in content
 
     def test_generate_requirements_txt_basic(self):
         """Test basic requirements.txt generation."""

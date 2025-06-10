@@ -177,10 +177,27 @@ SecretType = Union[str, SecretValue, SecretContext]
 
 
 @dataclass
+class DockerfileInstruction:
+    """Represents a Dockerfile instruction."""
+
+    instruction: str
+    args: List[str]
+
+    def to_dockerfile_line(self) -> str:
+        """Convert to Dockerfile line format."""
+        if self.instruction in ["CMD", "ENTRYPOINT"] and len(self.args) > 1:
+            # Handle array format for CMD/ENTRYPOINT
+            args_str = '["' + '", "'.join(self.args) + '"]'
+            return f"{self.instruction} {args_str}"
+        else:
+            return f"{self.instruction} {' '.join(self.args)}"
+
+
+@dataclass
 class AgentfileConfig:
     """Represents the complete Agentfile configuration."""
 
-    base_image: str = "fast-agent:latest"
+    base_image: str = "yeahdongcn/agentman-base:latest"
     default_model: Optional[str] = None
     servers: Dict[str, MCPServer] = field(default_factory=dict)
     agents: Dict[str, Agent] = field(default_factory=dict)
@@ -190,6 +207,7 @@ class AgentfileConfig:
     secrets: List[SecretType] = field(default_factory=list)
     expose_ports: List[int] = field(default_factory=list)
     cmd: List[str] = field(default_factory=lambda: ["python", "agent.py"])
+    dockerfile_instructions: List[DockerfileInstruction] = field(default_factory=list)
 
 
 class AgentfileParser:
@@ -210,13 +228,34 @@ class AgentfileParser:
         """Parse Agentfile content and return the configuration."""
         lines = content.split('\n')
 
-        for line_num, line in enumerate(lines, 1):
-            line = line.strip()
+        # Pre-process lines to handle multi-line continuations with backslash
+        processed_lines = []
+        current_line = ""
 
-            # Skip empty lines and comments
-            if not line or line.startswith('#'):
+        for line_num, line in enumerate(lines, 1):
+            line = line.rstrip()  # Remove trailing whitespace but keep leading
+
+            # Skip empty lines and comments if not part of a continuation
+            if not current_line and (not line or line.lstrip().startswith('#')):
                 continue
 
+            # Check for line continuation
+            if line.endswith('\\'):
+                # Remove the backslash and add to current line with a space
+                current_line += line[:-1].rstrip() + " "
+            else:
+                # Complete the line
+                current_line += line
+                if current_line.strip():  # Only add non-empty lines
+                    processed_lines.append((line_num, current_line.strip()))
+                current_line = ""
+
+        # Handle any remaining line (shouldn't happen with proper syntax)
+        if current_line.strip():
+            processed_lines.append((len(lines), current_line.strip()))
+
+        # Parse each processed line
+        for line_num, line in processed_lines:
             try:
                 self._parse_line(line)
             except Exception as e:
@@ -233,14 +272,11 @@ class AgentfileParser:
 
         instruction = parts[0].upper()
 
-        if instruction == "FROM":
-            self._handle_from(parts)
-        elif instruction == "MODEL":
+        # Agentman-specific instructions (not Docker)
+        if instruction == "MODEL":
             self._handle_model(parts)
-        elif instruction == "SERVER":
+        elif instruction in ["SERVER", "MCP_SERVER"]:
             self._handle_server(parts)
-        elif instruction == "MCP_SERVER":
-            self._handle_server(parts)  # Alias for SERVER
         elif instruction == "AGENT":
             self._handle_agent(parts)
         elif instruction == "ROUTER":
@@ -251,12 +287,40 @@ class AgentfileParser:
             self._handle_orchestrator(parts)
         elif instruction == "SECRET":
             self._handle_secret(parts)
+        # Dockerfile instructions - handle specially where needed
+        elif instruction == "FROM":
+            self._handle_from(parts)
+            self._handle_dockerfile_instruction(instruction, parts)
         elif instruction == "EXPOSE":
             self._handle_expose(parts)
+            self._handle_dockerfile_instruction(instruction, parts)
         elif instruction == "CMD":
             self._handle_cmd(parts)
+            self._handle_dockerfile_instruction(instruction, parts)
         elif instruction == "RUN":
-            self._handle_run(parts)
+            self._handle_dockerfile_instruction(instruction, parts)
+        # All other Dockerfile instructions - store as-is
+        elif instruction in [
+            # Standard Dockerfile instructions
+            "ARG",
+            "ADD",
+            "COPY",
+            "ENTRYPOINT",
+            "HEALTHCHECK",
+            "LABEL",
+            "MAINTAINER",
+            "ONBUILD",
+            "SHELL",
+            "STOPSIGNAL",
+            "USER",
+            "VOLUME",
+            "WORKDIR",
+            # BuildKit instructions
+            "MOUNT",
+            "BUILDKIT",
+        ]:
+            self._handle_dockerfile_instruction(instruction, parts)
+        # Sub-instructions for contexts
         elif instruction in [
             "COMMAND",
             "ARGS",
@@ -266,7 +330,6 @@ class AgentfileParser:
             "SEQUENCE",
             "TRANSPORT",
             "URL",
-            "ENV",
             "USE_HISTORY",
             "HUMAN_INPUT",
             "PLAN_TYPE",
@@ -276,8 +339,17 @@ class AgentfileParser:
             "BASE_URL",
         ]:
             self._handle_sub_instruction(instruction, parts)
+        # Handle ENV - could be Dockerfile instruction or sub-instruction
+        elif instruction == "ENV":
+            if self.current_context and self.current_context == "server":
+                # It's a sub-instruction for SERVER context
+                self._handle_sub_instruction(instruction, parts)
+            else:
+                # It's a Dockerfile instruction
+                self._handle_dockerfile_instruction(instruction, parts)
         else:
-            raise ValueError(f"Unknown instruction: {instruction}")
+            # Unknown instruction - treat as potential Dockerfile instruction for forward compatibility
+            self._handle_dockerfile_instruction(instruction, parts)
 
     def _split_respecting_quotes(self, line: str) -> List[str]:
         """Split line by whitespace but respect quoted strings."""
@@ -397,12 +469,24 @@ class AgentfileParser:
             self.current_context = None
         # Check if it's a context (no value, will be populated with sub-instructions)
         elif len(parts) == 2:
-            # Create a secret context - this will be used if subsequent lines contain key-value pairs
-            # If no key-value pairs follow, it will be treated as a simple reference
-            secret = SecretContext(name=secret_name)
-            self.config.secrets.append(secret)
-            self.current_context = "secret"
-            self.current_item = secret_name
+            # Check if a secret context with this name already exists
+            existing_secret = None
+            for secret in self.config.secrets:
+                if isinstance(secret, SecretContext) and secret.name == secret_name:
+                    existing_secret = secret
+                    break
+
+            if existing_secret:
+                # Reuse existing secret context
+                self.current_context = "secret"
+                self.current_item = secret_name
+            else:
+                # Create a new secret context - this will be used if subsequent lines contain key-value pairs
+                # If no key-value pairs follow, it will be treated as a simple reference
+                secret = SecretContext(name=secret_name)
+                self.config.secrets.append(secret)
+                self.current_context = "secret"
+                self.current_item = secret_name
         else:
             raise ValueError("Invalid SECRET format. Use: SECRET NAME or SECRET NAME value")
 
@@ -457,8 +541,15 @@ class AgentfileParser:
             self.config.cmd = [self._unquote(part) for part in parts[1:]]
         self.current_context = None
 
-    def _handle_run(self, parts: List[str]):
-        pass
+    def _handle_dockerfile_instruction(self, instruction: str, parts: List[str]):
+        """Handle any generic Dockerfile instruction."""
+        if len(parts) < 2:
+            raise ValueError(f"{instruction} requires arguments")
+
+        # Store all instructions for ordered generation
+        dockerfile_instruction = DockerfileInstruction(instruction=instruction, args=parts[1:])
+        self.config.dockerfile_instructions.append(dockerfile_instruction)
+        self.current_context = None
 
     def _handle_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions that modify the current context item."""

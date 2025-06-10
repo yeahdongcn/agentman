@@ -1,5 +1,5 @@
 # Chain Example Agentfile
-FROM yeahdongcn/agentman:base
+FROM yeahdongcn/agentman-base:latest
 MODEL qwen-plus
 
 SECRET ALIYUN_API_KEY sk-100

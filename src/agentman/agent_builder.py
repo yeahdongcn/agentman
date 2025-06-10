@@ -220,37 +220,32 @@ class AgentBuilder:
         """Generate the Dockerfile."""
         lines = []
 
-        # Base image
-        if self.config.base_image == "fast-agent:latest":
-            # Use Python base and install fast-agent
-            lines.extend(
-                [
-                    "FROM python:3.11-slim",
-                    "",
-                    "# Install system dependencies",
-                    "RUN apt-get update && apt-get install -y \\",
-                    "    nodejs \\",
-                    "    npm \\",
-                    "    && rm -rf /var/lib/apt/lists/*",
-                    "",
-                    "# Set working directory",
-                    "WORKDIR /app",
-                    "",
-                    "# Copy requirements and install Python dependencies",
-                    "COPY requirements.txt .",
-                    "RUN pip install --no-cache-dir -r requirements.txt",
-                    "",
-                ]
-            )
-        else:
-            lines.extend(
-                [
-                    f"FROM {self.config.base_image}",
-                    "",
-                    "WORKDIR /app",
-                    "",
-                ]
-            )
+        # Start with FROM instruction
+        lines.extend([f"FROM {self.config.base_image}", ""])
+
+        # Add all other Dockerfile instructions in order (except FROM, EXPOSE, CMD which are handled specially)
+        for instruction in self.config.dockerfile_instructions:
+            if instruction.instruction not in ["FROM", "EXPOSE", "CMD"]:
+                lines.append(instruction.to_dockerfile_line())
+
+        # Add a blank line if we have custom instructions
+        if any(inst.instruction not in ["FROM", "EXPOSE", "CMD"] for inst in self.config.dockerfile_instructions):
+            lines.append("")
+
+        # Set working directory if not already set by custom instructions
+        workdir_set = any(inst.instruction == "WORKDIR" for inst in self.config.dockerfile_instructions)
+        if not workdir_set:
+            lines.extend(["WORKDIR /app", ""])
+
+        # Copy requirements and install Python dependencies
+        lines.extend(
+            [
+                "# Copy requirements and install Python dependencies",
+                "COPY requirements.txt .",
+                "RUN pip install --no-cache-dir -r requirements.txt",
+                "",
+            ]
+        )
 
         # Copy application files
         lines.extend(
@@ -259,15 +254,6 @@ class AgentBuilder:
                 "COPY agent.py .",
                 "COPY fastagent.config.yaml .",
                 "COPY fastagent.secrets.yaml .",
-                "",
-            ]
-        )
-
-        lines.extend(
-            [
-                "# Copy requirements and install Python dependencies",
-                "COPY requirements.txt .",
-                "RUN pip install --no-cache-dir -r requirements.txt",
                 "",
             ]
         )
