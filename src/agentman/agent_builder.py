@@ -223,6 +223,16 @@ class AgentBuilder:
         # Start with FROM instruction
         lines.extend([f"FROM {self.config.base_image}", ""])
 
+        # Copy requirements and install Python dependencies
+        lines.extend(
+            [
+                "# Copy requirements and install Python dependencies",
+                "COPY requirements.txt .",
+                "RUN pip install --no-cache-dir -r requirements.txt",
+                "",
+            ]
+        )
+
         # Add all other Dockerfile instructions in order (except FROM)
         # We'll handle EXPOSE and CMD at the end in their proper positions
         for instruction in self.config.dockerfile_instructions:
@@ -237,16 +247,6 @@ class AgentBuilder:
         workdir_set = any(inst.instruction == "WORKDIR" for inst in self.config.dockerfile_instructions)
         if not workdir_set:
             lines.extend(["WORKDIR /app", ""])
-
-        # Copy requirements and install Python dependencies
-        lines.extend(
-            [
-                "# Copy requirements and install Python dependencies",
-                "COPY requirements.txt .",
-                "RUN pip install --no-cache-dir -r requirements.txt",
-                "",
-            ]
-        )
 
         # Copy application files
         lines.extend(
@@ -297,11 +297,11 @@ class AgentBuilder:
 
         # Add additional requirements based on servers used
         server_requirements = {
-            "fetch": ["requests"],
-            "filesystem": [],  # Built into fast-agent
-            "brave": ["requests"],
-            "postgres": ["psycopg2-binary"],
-            "sqlite": [],  # Built into Python
+            "fetch": [],
+            "filesystem": [],
+            "brave": [],
+            "postgres": [],
+            "sqlite": [],
         }
 
         for server_name in self.config.servers.keys():
