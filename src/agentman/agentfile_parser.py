@@ -565,8 +565,21 @@ class AgentfileParser:
         if len(parts) < 2:
             raise ValueError(f"{instruction} requires arguments")
 
+        # Special handling for ENV instruction to support KEY=VALUE format
+        if instruction == "ENV":
+            # Handle both KEY VALUE and KEY=VALUE formats for Dockerfile ENV
+            args = parts[1:]
+            if len(args) == 1 and '=' in args[0]:
+                # KEY=VALUE format - keep as single argument for Dockerfile
+                dockerfile_args = args
+            else:
+                # KEY VALUE format or multiple args - keep as is
+                dockerfile_args = args
+        else:
+            dockerfile_args = parts[1:]
+
         # Store all instructions for ordered generation
-        dockerfile_instruction = DockerfileInstruction(instruction=instruction, args=parts[1:])
+        dockerfile_instruction = DockerfileInstruction(instruction=instruction, args=dockerfile_args)
         self.config.dockerfile_instructions.append(dockerfile_instruction)
         self.current_context = None
 
@@ -621,11 +634,26 @@ class AgentfileParser:
                 raise ValueError("URL requires a URL")
             server.url = self._unquote(parts[1])
         elif instruction == "ENV":
-            if len(parts) < 3:
-                raise ValueError("ENV requires KEY VALUE")
-            key = self._unquote(parts[1])
-            value = self._unquote(parts[2])
-            server.env[key] = value
+            if len(parts) < 2:
+                raise ValueError("ENV requires KEY VALUE or KEY=VALUE")
+
+            if len(parts) == 2:
+                # Handle KEY=VALUE format
+                env_part = parts[1]
+                if '=' in env_part:
+                    key, value = env_part.split('=', 1)  # Split only on first =
+                    key = self._unquote(key)
+                    value = self._unquote(value)
+                    server.env[key] = value
+                else:
+                    raise ValueError("ENV requires KEY VALUE or KEY=VALUE")
+            elif len(parts) >= 3:
+                # Handle KEY VALUE format
+                key = self._unquote(parts[1])
+                value = self._unquote(' '.join(parts[2:]))  # Join remaining parts as value
+                server.env[key] = value
+            else:
+                raise ValueError("ENV requires KEY VALUE or KEY=VALUE")
 
     def _handle_agent_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions for AGENT context."""

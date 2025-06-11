@@ -351,7 +351,84 @@ BASE_URL https://api.openai.com/v1
         assert secret.values["API_KEY"] == "sk-test123"
         assert secret.values["BASE_URL"] == "https://api.openai.com/v1"
 
+    def test_env_key_value_syntax_server_context(self):
+        """Test parsing ENV KEY=VALUE syntax in SERVER context."""
+        content = """
+FROM yeahdongcn/agentman-base:latest
 
+SERVER github-mcp-server
+COMMAND /server/github-mcp-server
+ARGS stdio
+ENV GITHUB_PERSONAL_ACCESS_TOKEN=ABC123
+ENV API_BASE_URL=https://api.github.com/v1
+TRANSPORT stdio
+"""
+        config = self.parser.parse_content(content)
+
+        assert len(config.servers) == 1
+        assert "github-mcp-server" in config.servers
+        server = config.servers["github-mcp-server"]
+        assert server.name == "github-mcp-server"
+        assert server.command == "/server/github-mcp-server"
+        assert server.args == ["stdio"]
+        assert server.transport == "stdio"
+
+        # Check that environment variables are properly parsed
+        assert len(server.env) == 2
+        assert server.env["GITHUB_PERSONAL_ACCESS_TOKEN"] == "ABC123"
+        assert server.env["API_BASE_URL"] == "https://api.github.com/v1"
+
+    def test_env_key_value_syntax_dockerfile_context(self):
+        """Test parsing ENV KEY=VALUE syntax as Dockerfile instruction."""
+        content = """
+FROM yeahdongcn/agentman-base:latest
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV PYTHON_PATH=/usr/local/lib/python3.9
+WORKDIR /app
+"""
+        config = self.parser.parse_content(content)
+
+        assert config.base_image == "yeahdongcn/agentman-base:latest"
+        assert len(config.dockerfile_instructions) == 4  # FROM, ENV, ENV, WORKDIR
+
+        # Find the ENV instructions
+        env_instructions = [instr for instr in config.dockerfile_instructions if instr.instruction == "ENV"]
+        assert len(env_instructions) == 2
+
+        # Check first ENV instruction
+        assert env_instructions[0].instruction == "ENV"
+        assert env_instructions[0].args == ["SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"]
+        assert env_instructions[0].to_dockerfile_line() == "ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt"
+
+        # Check second ENV instruction
+        assert env_instructions[1].instruction == "ENV"
+        assert env_instructions[1].args == ["PYTHON_PATH=/usr/local/lib/python3.9"]
+        assert env_instructions[1].to_dockerfile_line() == "ENV PYTHON_PATH=/usr/local/lib/python3.9"
+
+    def test_env_mixed_syntax_server_context(self):
+        """Test parsing mixed ENV syntax (KEY VALUE and KEY=VALUE) in SERVER context."""
+        content = """
+FROM yeahdongcn/agentman-base:latest
+
+SERVER mixed-server
+COMMAND /server/mixed-server
+ENV TOKEN abc123
+ENV API_URL=https://api.example.com
+ENV DEBUG true
+TRANSPORT stdio
+"""
+        config = self.parser.parse_content(content)
+
+        assert len(config.servers) == 1
+        server = config.servers["mixed-server"]
+
+        # Check that both syntax formats work
+        assert len(server.env) == 3
+        assert server.env["TOKEN"] == "abc123"  # KEY VALUE format
+        assert server.env["API_URL"] == "https://api.example.com"  # KEY=VALUE format
+        assert server.env["DEBUG"] == "true"  # KEY VALUE format
+
+    # ...existing code...
 class TestDataClasses:
     """Test suite for data classes used by AgentfileParser."""
 
