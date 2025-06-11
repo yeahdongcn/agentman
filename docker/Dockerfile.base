@@ -3,7 +3,7 @@ ARG NODE_VERSION=22
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    curl && \
+    curl vim && \
     rm -rf /var/lib/apt/lists/*
 # ref: https://github.com/nvm-sh/nvm
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
