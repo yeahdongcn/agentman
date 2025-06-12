@@ -1,0 +1,69 @@
+FROM yeahdongcn/agentman-base:latest
+
+
+COPY --from=ghcr.io/github/github-mcp-server /server/github-mcp-server /server/github-mcp-server
+COPY --from=ghcr.io/github/github-mcp-server /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    git && \
+    rm -rf /var/lib/apt/lists/*
+
+MODEL qwen-plus
+SECRET ALIYUN_API_KEY sk-...
+
+RUN mkdir -p /app && mkdir -p /ws
+WORKDIR /app
+
+AGENT github-release-checker
+INSTRUCTION Given a GitHub repository URL, find the latest **official release** of the repository. An official release must meet **all** of the following conditions: \
+            1. It MUST be explicitly marked as **“Latest”** on the GitHub Releases page. \
+            2. It MUST **not** be marked as a **“Pre-release”**. \
+            3. Its **tag** or **tag_name** MUST **not** contain pre-release identifiers such as `rc`, `alpha`, `beta`, etc. (e.g., tags like `v0.9.1-rc0`, `v1.0.0-beta`, or `v2.0.0-alpha` should be considered pre-releases and **ignored**). \
+            If a release does not satisfy all these conditions, do **not** return it. Instead, continue fetching additional releases until you find the most recent release that satisfies the criteria. \
+            Once you find a valid release, return the **tag** of that release.
+SERVERS fetch github-mcp-server
+
+AGENT github-repository-cloner
+INSTRUCTION Given a GitHub repository URL and a release tag, clone the repository by using git clone command and checkout to the specified release tag. \
+            You should also ensure that the repository is cloned to the /ws directory.
+SERVERS commands git filesystem
+
+AGENT latest-commit-checker
+INSTRUCTION Given a GitHub repository local path, check if the latest commit of the repository matches the specified release tag. \
+            If it does, return \"The latest commit matches the release tag.\" Otherwise, return \"The latest commit does not match the release tag.\"
+SERVERS commands git filesystem
+
+ORCHESTRATOR github-maintainer
+AGENTS github-release-checker github-repository-cloner latest-commit-checker
+PLAN_TYPE full
+PLAN_ITERATIONS 30
+
+SERVER fetch
+COMMAND uvx
+ARGS mcp-server-fetch
+TRANSPORT stdio
+
+SERVER git
+COMMAND uvx
+ARGS mcp-server-git
+TRANSPORT stdio
+
+SERVER filesystem
+COMMAND npx
+ARGS -y @modelcontextprotocol/server-filesystem /ws
+TRANSPORT stdio
+
+SERVER commands
+COMMAND npx
+ARGS mcp-server-commands
+TRANSPORT stdio
+
+SERVER github-mcp-server
+COMMAND /server/github-mcp-server
+ARGS stdio
+ENV GITHUB_PERSONAL_ACCESS_TOKEN=ghp_...
+TRANSPORT stdio
+
+CMD ["python", "agent.py"]
