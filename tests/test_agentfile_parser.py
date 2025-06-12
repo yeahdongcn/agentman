@@ -428,6 +428,62 @@ TRANSPORT stdio
         assert server.env["API_URL"] == "https://api.example.com"  # KEY=VALUE format
         assert server.env["DEBUG"] == "true"  # KEY VALUE format
 
+    def test_multiline_instruction_syntax(self):
+        """Test parsing multiline INSTRUCTION with backslash continuation."""
+        content = """
+FROM yeahdongcn/agentman-base:latest
+
+AGENT github-release-checker
+INSTRUCTION Given a GitHub repository URL, find the latest **official release** of the repository. \\
+            An official release is one that is explicitly marked as **"Latest"** and **not** marked as a **"Pre-release"**. \\
+            If you encounter a release marked as **Pre-release**, do **not** stop or return it. \\
+            Instead, continue checking additional releases until you find the most recent release that meets the criteria.
+SERVERS fetch github-mcp-server
+"""
+        config = self.parser.parse_content(content)
+
+        assert len(config.agents) == 1
+        assert "github-release-checker" in config.agents
+        agent = config.agents["github-release-checker"]
+        assert agent.name == "github-release-checker"
+        assert agent.servers == ["fetch", "github-mcp-server"]
+
+        # Check that the multiline instruction is properly combined
+        expected_instruction = ('Given a GitHub repository URL, find the latest **official release** of the repository. '
+                               'An official release is one that is explicitly marked as **"Latest"** and **not** marked as a **"Pre-release"**. '
+                               'If you encounter a release marked as **Pre-release**, do **not** stop or return it. '
+                               'Instead, continue checking additional releases until you find the most recent release that meets the criteria.')
+        assert agent.instruction == expected_instruction
+
+    def test_multiline_instruction_complex_syntax(self):
+        """Test parsing complex multiline INSTRUCTION with multiple continuation lines."""
+        content = """
+FROM yeahdongcn/agentman-base:latest
+
+AGENT complex-agent
+INSTRUCTION This is a very long instruction that spans multiple lines \\
+            and contains detailed explanations about what the agent should do. \\
+            It includes specific requirements, formatting instructions, \\
+            and examples of the expected output format. \\
+            The agent should handle edge cases gracefully \\
+            and provide comprehensive responses.
+SERVERS server1 server2
+"""
+        config = self.parser.parse_content(content)
+
+        assert len(config.agents) == 1
+        agent = config.agents["complex-agent"]
+
+        # Check that all lines are properly combined with spaces
+        expected_instruction = ('This is a very long instruction that spans multiple lines '
+                               'and contains detailed explanations about what the agent should do. '
+                               'It includes specific requirements, formatting instructions, '
+                               'and examples of the expected output format. '
+                               'The agent should handle edge cases gracefully '
+                               'and provide comprehensive responses.')
+        assert agent.instruction == expected_instruction
+        assert agent.servers == ["server1", "server2"]
+
     # ...existing code...
 class TestDataClasses:
     """Test suite for data classes used by AgentfileParser."""

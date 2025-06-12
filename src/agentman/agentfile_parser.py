@@ -125,7 +125,7 @@ class Orchestrator:
     model: Optional[str] = None
     instruction: Optional[str] = None
     plan_type: str = "full"
-    max_iterations: int = 5
+    plan_iterations: int = 5
     human_input: bool = False
 
     def to_decorator_string(self, default_model: Optional[str] = None) -> str:
@@ -147,8 +147,8 @@ class Orchestrator:
         if self.plan_type != "full":
             params.append(f'plan_type="{self.plan_type}"')
 
-        if self.max_iterations != 5:
-            params.append(f"max_iterations={self.max_iterations}")
+        if self.plan_iterations != 5:
+            params.append(f"plan_iterations={self.plan_iterations}")
 
         if self.human_input:
             params.append("human_input=True")
@@ -349,7 +349,7 @@ class AgentfileParser:
             "USE_HISTORY",
             "HUMAN_INPUT",
             "PLAN_TYPE",
-            "MAX_ITERATIONS",
+            "PLAN_ITERATIONS",
             "CUMULATIVE",
             "API_KEY",
             "BASE_URL",
@@ -741,13 +741,13 @@ class AgentfileParser:
             if plan_type not in ["full", "iterative"]:
                 raise ValueError(f"Invalid plan type: {plan_type}")
             orchestrator.plan_type = plan_type
-        elif instruction == "MAX_ITERATIONS":
+        elif instruction == "PLAN_ITERATIONS":
             if len(parts) < 2:
-                raise ValueError("MAX_ITERATIONS requires a number")
+                raise ValueError("PLAN_ITERATIONS requires a number")
             try:
-                orchestrator.max_iterations = int(parts[1])
+                orchestrator.plan_iterations = int(parts[1])
             except ValueError:
-                raise ValueError(f"Invalid number for MAX_ITERATIONS: {parts[1]}")
+                raise ValueError(f"Invalid number for PLAN_ITERATIONS: {parts[1]}")
         elif instruction == "HUMAN_INPUT":
             if len(parts) < 2:
                 raise ValueError("HUMAN_INPUT requires true/false")
