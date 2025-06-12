@@ -1,6 +1,7 @@
 """Agent builder module for generating files from Agentfile configuration."""
 
 import json
+import subprocess
 from pathlib import Path
 
 import yaml
@@ -24,6 +25,7 @@ class AgentBuilder:
         self._generate_dockerfile()
         self._generate_requirements_txt()
         self._generate_dockerignore()
+        self._validate_output()
 
     def _ensure_output_dir(self):
         """Ensure output directory exists."""
@@ -374,6 +376,14 @@ class AgentBuilder:
         dockerignore = self.output_dir / ".dockerignore"
         with open(dockerignore, 'w', encoding='utf-8') as f:
             f.write("\n".join(ignore_patterns))
+
+    def _validate_output(self):
+        """Validate that all required files were generated."""
+        try:
+            subprocess.run(["fast-agent", "check"], check=True, cwd=self.output_dir)
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Validation failed: {e}")
+            raise RuntimeError("Validation of generated files failed. Please check the output for errors.")
 
 
 def build_from_agentfile(agentfile_path: str, output_dir: str = "output") -> None:
