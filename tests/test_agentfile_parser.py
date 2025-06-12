@@ -513,7 +513,8 @@ class TestDataClasses:
             servers=["filesystem"],
             model="anthropic/claude-3-sonnet-20241022",
             use_history=True,
-            human_input=False
+            human_input=False,
+            default=False,
         )
         assert agent.name == "assistant"
         assert agent.instruction == "You are helpful"
@@ -521,6 +522,7 @@ class TestDataClasses:
         assert agent.model == "anthropic/claude-3-sonnet-20241022"
         assert agent.use_history is True
         assert agent.human_input is False
+        assert agent.default is False
 
     def test_secret_value_creation(self):
         """Test SecretValue data class creation."""
@@ -549,6 +551,7 @@ class TestDataClasses:
         assert router.agents == ["agent1", "agent2"]
         assert router.model == "anthropic/claude-3-sonnet-20241022"
         assert router.instruction == "Route requests"
+        assert router.default is False
 
     def test_chain_creation(self):
         """Test Chain data class creation."""
@@ -560,6 +563,7 @@ class TestDataClasses:
         assert chain.name == "sequential"
         assert chain.sequence == ["agent1", "agent2"]
         assert chain.instruction == "Process sequentially"
+        assert chain.default is False
 
     def test_orchestrator_creation(self):
         """Test Orchestrator data class creation."""
@@ -567,12 +571,14 @@ class TestDataClasses:
             name="complex",
             agents=["agent1", "agent2"],
             model="anthropic/claude-3-sonnet-20241022",
-            instruction="Orchestrate agents"
+            instruction="Orchestrate agents",
+            default=True,
         )
         assert orchestrator.name == "complex"
         assert orchestrator.agents == ["agent1", "agent2"]
         assert orchestrator.model == "anthropic/claude-3-sonnet-20241022"
         assert orchestrator.instruction == "Orchestrate agents"
+        assert orchestrator.default is True
 
     def test_agentfile_config_creation(self):
         """Test AgentfileConfig data class creation."""
