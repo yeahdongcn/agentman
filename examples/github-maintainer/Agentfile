@@ -39,6 +39,7 @@ ORCHESTRATOR github-maintainer
 AGENTS github-release-checker github-repository-cloner latest-commit-checker
 PLAN_TYPE full
 PLAN_ITERATIONS 30
+DEFAULT 1
 
 SERVER fetch
 COMMAND uvx

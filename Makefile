@@ -26,6 +26,7 @@ check-format:
 
 .PHONY: format
 format:
+	uv pip install -e .[dev]
 	black */*/*.py
 	isort */*/*.py
 

@@ -298,7 +298,7 @@ class AgentBuilder:
     def _generate_requirements_txt(self):
         """Generate the requirements.txt file."""
         requirements = [
-            "fast-agent-mcp>=0.2.30",
+            "fast-agent-mcp>=0.2.31",
             "deprecated>=1.2.18",
         ]
 

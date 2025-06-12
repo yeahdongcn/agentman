@@ -42,6 +42,7 @@ class Agent:
     model: Optional[str] = None
     use_history: bool = True
     human_input: bool = False
+    default: bool = False
 
     def to_decorator_string(self, default_model: Optional[str] = None) -> str:
         """Generate the @fast.agent decorator string."""
@@ -60,6 +61,9 @@ class Agent:
         if self.human_input:
             params.append("human_input=True")
 
+        if self.default:
+            params.append("default=True")
+
         return "@fast.agent(\n    " + ",\n    ".join(params) + "\n)"
 
 
@@ -71,6 +75,7 @@ class Router:
     agents: List[str] = field(default_factory=list)
     model: Optional[str] = None
     instruction: Optional[str] = None
+    default: bool = False
 
     def to_decorator_string(self, default_model: Optional[str] = None) -> str:
         """Generate the @fast.router decorator string."""
@@ -86,6 +91,9 @@ class Router:
         if self.instruction:
             params.append(f'instruction="""{self.instruction}"""')
 
+        if self.default:
+            params.append("default=True")
+
         return "@fast.router(\n    " + ",\n    ".join(params) + "\n)"
 
 
@@ -98,6 +106,7 @@ class Chain:
     instruction: Optional[str] = None
     cumulative: bool = False
     continue_with_final: bool = True
+    default: bool = False
 
     def to_decorator_string(self) -> str:
         """Generate the @fast.chain decorator string."""
@@ -116,6 +125,9 @@ class Chain:
         if not self.continue_with_final:
             params.append("continue_with_final=False")
 
+        if self.default:
+            params.append("default=True")
+
         return "@fast.chain(\n    " + ",\n    ".join(params) + "\n)"
 
 
@@ -130,6 +142,7 @@ class Orchestrator:
     plan_type: str = "full"
     plan_iterations: int = 5
     human_input: bool = False
+    default: bool = False
 
     def to_decorator_string(self, default_model: Optional[str] = None) -> str:
         """Generate the @fast.orchestrator decorator string."""
@@ -155,6 +168,9 @@ class Orchestrator:
 
         if self.human_input:
             params.append("human_input=True")
+
+        if self.default:
+            params.append("default=True")
 
         return "@fast.orchestrator(\n    " + ",\n    ".join(params) + "\n)"
 
@@ -354,6 +370,7 @@ class AgentfileParser:
             "CUMULATIVE",
             "API_KEY",
             "BASE_URL",
+            "DEFAULT",
         ]:
             self._handle_sub_instruction(instruction, parts)
         # Handle ENV - could be Dockerfile instruction or sub-instruction
@@ -681,6 +698,10 @@ class AgentfileParser:
             if len(parts) < 2:
                 raise ValueError("HUMAN_INPUT requires true/false")
             agent.human_input = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
+        elif instruction == "DEFAULT":
+            if len(parts) < 2:
+                raise ValueError("DEFAULT requires true/false")
+            agent.default = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
 
     def _handle_router_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions for ROUTER context."""
@@ -698,6 +719,10 @@ class AgentfileParser:
             if len(parts) < 2:
                 raise ValueError("INSTRUCTION requires instruction text")
             router.instruction = self._unquote(' '.join(parts[1:]))
+        elif instruction == "DEFAULT":
+            if len(parts) < 2:
+                raise ValueError("DEFAULT requires true/false")
+            router.default = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
 
     def _handle_chain_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions for CHAIN context."""
@@ -719,6 +744,10 @@ class AgentfileParser:
             if len(parts) < 2:
                 raise ValueError("CONTINUE_WITH_FINAL requires true/false")
             chain.continue_with_final = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
+        elif instruction == "DEFAULT":
+            if len(parts) < 2:
+                raise ValueError("DEFAULT requires true/false")
+            chain.default = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
 
     def _handle_orchestrator_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions for ORCHESTRATOR context."""
@@ -754,3 +783,7 @@ class AgentfileParser:
             if len(parts) < 2:
                 raise ValueError("HUMAN_INPUT requires true/false")
             orchestrator.human_input = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
+        elif instruction == "DEFAULT":
+            if len(parts) < 2:
+                raise ValueError("DEFAULT requires true/false")
+            orchestrator.default = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
