@@ -1,8 +1,11 @@
+"""Agent builder module for generating files from Agentfile configuration."""
+
+import json
 from pathlib import Path
 
 import yaml
 
-from agentman.agentfile_parser import AgentfileConfig
+from agentman.agentfile_parser import AgentfileConfig, AgentfileParser
 
 
 class AgentBuilder:
@@ -31,7 +34,7 @@ class AgentBuilder:
         content = self._build_python_content()
 
         agent_file = self.output_dir / "agent.py"
-        with open(agent_file, 'w') as f:
+        with open(agent_file, 'w', encoding='utf-8') as f:
             f.write(content)
 
     def _build_python_content(self) -> str:
@@ -100,7 +103,7 @@ class AgentBuilder:
             }
 
         config_file = self.output_dir / "fastagent.config.yaml"
-        with open(config_file, 'w') as f:
+        with open(config_file, 'w', encoding='utf-8') as f:
             yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
 
     def _generate_secrets_yaml(self):
@@ -125,11 +128,12 @@ class AgentBuilder:
             secrets_data["mcp"] = {"servers": mcp_servers_env}
 
         secrets_file = self.output_dir / "fastagent.secrets.yaml"
-        with open(secrets_file, 'w') as f:
+        with open(secrets_file, 'w', encoding='utf-8') as f:
             f.write("# FastAgent Secrets Configuration\n")
             f.write("# WARNING: Keep this file secure and never commit to version control\n\n")
             f.write(
-                "# Alternatively set OPENAI_API_KEY and ANTHROPIC_API_KEY environment variables. Config file takes precedence.\n\n"
+                "# Alternatively set OPENAI_API_KEY and ANTHROPIC_API_KEY "
+                "environment variables. Config file takes precedence.\n\n"
             )
             yaml.dump(secrets_data, f, default_flow_style=False, sort_keys=False)
 
@@ -240,7 +244,10 @@ class AgentBuilder:
                 lines.append(instruction.to_dockerfile_line())
 
         # Add a blank line if we have custom instructions
-        if any(inst.instruction not in ["FROM", "EXPOSE", "CMD"] for inst in self.config.dockerfile_instructions):
+        custom_instructions = [
+            inst for inst in self.config.dockerfile_instructions if inst.instruction not in ["FROM", "EXPOSE", "CMD"]
+        ]
+        if custom_instructions:
             lines.append("")
 
         # Set working directory if not already set by custom instructions
@@ -279,13 +286,11 @@ class AgentBuilder:
                 lines.append(instruction.to_dockerfile_line())
         elif self.config.cmd:
             # Default command from config
-            import json
-
             cmd_str = json.dumps(self.config.cmd)
             lines.append(f"CMD {cmd_str}")
 
         dockerfile = self.output_dir / "Dockerfile"
-        with open(dockerfile, 'w') as f:
+        with open(dockerfile, 'w', encoding='utf-8') as f:
             f.write("\n".join(lines))
 
     def _generate_requirements_txt(self):
@@ -312,7 +317,7 @@ class AgentBuilder:
         requirements = sorted(list(set(requirements)))
 
         req_file = self.output_dir / "requirements.txt"
-        with open(req_file, 'w') as f:
+        with open(req_file, 'w', encoding='utf-8') as f:
             f.write("\n".join(requirements) + "\n")
 
     def _generate_dockerignore(self):
@@ -367,14 +372,12 @@ class AgentBuilder:
         ]
 
         dockerignore = self.output_dir / ".dockerignore"
-        with open(dockerignore, 'w') as f:
+        with open(dockerignore, 'w', encoding='utf-8') as f:
             f.write("\n".join(ignore_patterns))
 
 
 def build_from_agentfile(agentfile_path: str, output_dir: str = "output") -> None:
     """Build agent files from an Agentfile."""
-    from agentman.agentfile_parser import AgentfileParser
-
     parser = AgentfileParser()
     config = parser.parse_file(agentfile_path)
 

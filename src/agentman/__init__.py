@@ -1,3 +1,5 @@
+"""Agentman package for building MCP agents from Agentfiles."""
+
 import sys
 
 from agentman.cli import HelpException, init_cli, print_version

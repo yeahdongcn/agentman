@@ -29,6 +29,11 @@ format:
 	black */*/*.py
 	isort */*/*.py
 
+.PHONY: lint
+lint:
+	uv pip install -e .[dev]
+	uv run pylint src/agentman
+
 .PHONY: test
 test:
 	uv pip install -e .[dev]

@@ -44,6 +44,7 @@ dev = [
     "isort>=6.0.1",
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
+    "pylint>=3.0.0",
 ]
 publish = [
     "build>=1.0.0",
@@ -121,6 +122,18 @@ exclude_lines = [
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
 ]
+
+[tool.pylint.messages_control]
+disable = [
+    "too-many-branches",
+    "too-many-statements",
+    "too-many-instance-attributes",
+    "too-few-public-methods",
+    "unused-argument"
+]
+
+[tool.pylint.format]
+max-line-length = 120
 
 [tool.uv]
 package = true

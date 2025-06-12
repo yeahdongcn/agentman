@@ -1,3 +1,5 @@
+"""Command-line interface for Agentman."""
+
 import argparse
 import errno
 import subprocess
@@ -10,7 +12,19 @@ from agentman.version import print_version
 
 
 class HelpException(Exception):
-    pass
+    """Exception raised to trigger help display."""
+
+
+class BuildArgs:
+    """Arguments for the build command.
+
+    This class serves as a placeholder for build-related arguments
+    and may be expanded in the future to include argument validation
+    and processing logic.
+    """
+
+    def __init__(self):
+        """Initialize BuildArgs."""
 
 
 def resolve_context_path(path):
@@ -37,12 +51,15 @@ def safe_subprocess_run(cmd_args, check=True):
 
 
 class ArgumentParserWithDefaults(argparse.ArgumentParser):
-    def add_argument(self, *args, help=None, default=None, completer=None, **kwargs):
-        if help is not None:
-            kwargs['help'] = help
+    """Argument parser with default value handling."""
+
+    def add_argument(self, *args, help_text=None, default=None, completer=None, **kwargs):
+        """Add an argument with help text and default value."""
+        if help_text is not None:
+            kwargs['help'] = help_text
         if default is not None and args[0] != '-h':
             kwargs['default'] = default
-            if help is not None and help != "==SUPPRESS==":
+            if help_text is not None and help_text != "==SUPPRESS==":
                 kwargs['help'] += f' (default: {default})'
         action = super().add_argument(*args, **kwargs)
         if completer is not None:
@@ -51,6 +68,7 @@ class ArgumentParserWithDefaults(argparse.ArgumentParser):
 
 
 def get_description():
+    """Get the description for the CLI tool."""
     return """\
 A tool for building and managing AI agents
 """
@@ -68,6 +86,7 @@ def configure_arguments(parser):
 
 
 def create_argument_parser(description):
+    """Create and configure the argument parser."""
     parser = ArgumentParserWithDefaults(
         prog="agentman",
         description=description,
@@ -78,15 +97,24 @@ def create_argument_parser(description):
 
 
 def runtime_options(parser, command):
-    """Configure runtime options for commands."""
-    # TODO: Implement runtime options configuration
-    pass
+    """Configure runtime options for commands.
+
+    Args:
+        parser: The argument parser to add options to
+        command: The command name (currently unused but reserved for future use)
+    """
+    # Runtime options are not yet implemented but reserved for future use
+    # when we need command-specific runtime configurations
 
 
 def post_parse_setup(args):
-    """Perform post-parse setup operations."""
-    # TODO: Implement post-parse setup
-    pass
+    """Perform post-parse setup operations.
+
+    Args:
+        args: Parsed command line arguments (currently unused but reserved)
+    """
+    # Post-parse setup is not yet implemented but reserved for future use
+    # when we need to perform operations after argument parsing
 
 
 def build_cli(args):
@@ -116,12 +144,13 @@ def build_cli(args):
             safe_subprocess_run(docker_cmd, check=True)
             print(f"✅ Docker image built: {args.tag}")
 
-    except Exception as e:
+    except (subprocess.CalledProcessError, IOError, ValueError) as e:
         perror(f"Build failed: {e}")
         sys.exit(1)
 
 
 def build_parser(subparsers):
+    """Configure the build subcommand parser."""
     parser = subparsers.add_parser("build", help="Build an image from a Agentfile")
     parser.add_argument("-f", "--file", default="Agentfile", help="Name of the Agentfile")
     parser.add_argument("-o", "--output", help="Output directory for generated files (default: agent)")
@@ -194,7 +223,7 @@ def run_cli(args):
 
             safe_subprocess_run(run_cmd, check=True)
 
-        except Exception as e:
+        except (subprocess.CalledProcessError, IOError, ValueError) as e:
             perror(f"Run failed: {e}")
             sys.exit(1)
     else:
@@ -230,32 +259,35 @@ def run_cli(args):
 
         try:
             safe_subprocess_run(run_cmd, check=True)
-        except Exception as e:
+        except (subprocess.CalledProcessError, IOError, ValueError) as e:
             perror(f"Run failed: {e}")
             sys.exit(1)
 
 
 def run_parser(subparsers):
+    """Configure the run subcommand parser."""
     parser = subparsers.add_parser("run", help="Create and run a new container from an agent")
     parser.add_argument("-f", "--file", default="Agentfile", help="Name of the Agentfile (when building from source)")
     parser.add_argument(
-        "-o", "--output", help="Output directory for generated files (default: agent, when building from source)"
+        "-o", "--output", help="Output directory for generated files " "(default: agent, when building from source)"
     )
     parser.add_argument("-t", "--tag", default="agent:latest", help="Name and optionally a tag for the Docker image")
     parser.add_argument(
         "--from-agentfile",
         action="store_true",
-        help="Build from Agentfile and then run (default is to run existing image)",
+        help="Build from Agentfile and then run " "(default is to run existing image)",
     )
-    parser.add_argument("--path", default=".", help="Build context (directory or URL) when building from Agentfile")
+    parser.add_argument("--path", default=".", help="Build context (directory or URL) " "when building from Agentfile")
     parser.add_argument("-i", "--interactive", action="store_true", help="Run container interactively")
     parser.add_argument(
         "--rm", dest="remove", action="store_true", help="Automatically remove the container when it exits"
     )
     parser.add_argument(
-        "-p", "--port", action="append", help="Publish container port(s) to the host (can be used multiple times)"
+        "-p", "--port", action="append", help="Publish container port(s) to the host " "(can be used multiple times)"
     )
-    parser.add_argument("-e", "--env", action="append", help="Set environment variables (can be used multiple times)")
+    parser.add_argument(
+        "-e", "--env", action="append", help="Set environment variables " "(can be used multiple times)"
+    )
     parser.add_argument("-v", "--volume", action="append", help="Bind mount volumes (can be used multiple times)")
     parser.add_argument("command", nargs="*", help="Command to run in the container (overrides default)")
     runtime_options(parser, "run")
@@ -263,15 +295,18 @@ def run_parser(subparsers):
 
 
 def version_parser(subparsers):
+    """Configure the version subcommand parser."""
     parser = subparsers.add_parser("version", help="Show the Agentman version information")
     parser.set_defaults(func=print_version)
 
 
 def help_cli(args):
+    """Handle the help command by raising HelpException."""
     raise HelpException()
 
 
 def help_parser(subparsers):
+    """Configure the help subcommand parser."""
     parser = subparsers.add_parser("help")
     # Do not run in a container
     parser.set_defaults(func=help_cli)
@@ -293,6 +328,7 @@ def parse_arguments(parser):
 
 
 def init_cli():
+    """Initialize the CLI by setting up argument parser and parsing arguments."""
     description = get_description()
     parser = create_argument_parser(description)
     configure_subcommands(parser)
@@ -302,6 +338,7 @@ def init_cli():
 
 
 def main():
+    """Main entry point for the CLI application."""
     parser, args = init_cli()
 
     def eprint(e, exit_code):

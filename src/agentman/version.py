@@ -1,9 +1,14 @@
+"""Version information for Agentman."""
+
+
 def version():
+    """Return the current version of Agentman."""
     return "0.1.3"
 
 
 def print_version(args):
+    """Print the version information."""
     if args.quiet:
         print(version())
     else:
-        print("agentman version %s" % version())
+        print(f"agentman version {version()}")

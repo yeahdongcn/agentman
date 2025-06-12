@@ -1,3 +1,6 @@
+"""Agentfile parser module for parsing Agentfile configurations."""
+
+import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
@@ -187,8 +190,6 @@ class DockerfileInstruction:
         """Convert to Dockerfile line format."""
         if self.instruction in ["CMD", "ENTRYPOINT"] and len(self.args) > 1:
             # Handle array format for CMD/ENTRYPOINT
-            import json
-
             args_str = json.dumps(self.args)
             return f"{self.instruction} {args_str}"
         return f"{self.instruction} {' '.join(self.args)}"
@@ -221,7 +222,7 @@ class AgentfileParser:
 
     def parse_file(self, filepath: str) -> AgentfileConfig:
         """Parse an Agentfile and return the configuration."""
-        with open(filepath, 'r') as f:
+        with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
         return self.parse_content(content)
 
@@ -273,7 +274,7 @@ class AgentfileParser:
             try:
                 self._parse_line(line)
             except Exception as e:
-                raise ValueError(f"Error parsing line {line_num}: {line}\n{str(e)}")
+                raise ValueError(f"Error parsing line {line_num}: {line}\n{str(e)}") from e
 
         return self.config
 
@@ -364,7 +365,8 @@ class AgentfileParser:
                 # It's a Dockerfile instruction
                 self._handle_dockerfile_instruction(instruction, parts)
         else:
-            # Unknown instruction - treat as potential Dockerfile instruction for forward compatibility
+            # Unknown instruction - treat as potential Dockerfile instruction
+            # for forward compatibility
             self._handle_dockerfile_instruction(instruction, parts)
 
     def _split_respecting_quotes(self, line: str) -> List[str]:
@@ -500,8 +502,9 @@ class AgentfileParser:
                 self.current_context = "secret"
                 self.current_item = secret_name
             else:
-                # Create a new secret context - this will be used if subsequent lines contain key-value pairs
-                # If no key-value pairs follow, it will be treated as a simple reference
+                # Create a new secret context - this will be used if subsequent
+                # lines contain key-value pairs. If no key-value pairs follow,
+                # it will be treated as a simple reference
                 secret = SecretContext(name=secret_name)
                 self.config.secrets.append(secret)
                 self.current_context = "secret"
@@ -526,7 +529,7 @@ class AgentfileParser:
 
         # Handle key-value pairs like: API_KEY your_key_here
         if len(parts) >= 2:
-            key = parts[0].upper()
+            key = instruction.upper()
             value = ' '.join(parts[1:])
             secret_context.values[key] = self._unquote(value)
         else:
@@ -540,8 +543,8 @@ class AgentfileParser:
             port = int(parts[1])
             if port not in self.config.expose_ports:
                 self.config.expose_ports.append(port)
-        except ValueError:
-            raise ValueError(f"Invalid port number: {parts[1]}")
+        except ValueError as exc:
+            raise ValueError(f"Invalid port number: {parts[1]}") from exc
         self.current_context = None
 
     def _handle_cmd(self, parts: List[str]):
@@ -586,16 +589,15 @@ class AgentfileParser:
     def _handle_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions that modify the current context item."""
         if not self.current_context:
-            # Special case: if we're not in a context but this looks like a key-value pair
-            # for a secret context, try to handle it
+            # Special case: if we're not in a context but this looks like
+            # a key-value pair for a secret context, try to handle it
             if self.current_item and any(
                 isinstance(s, SecretContext) and s.name == self.current_item for s in self.config.secrets
             ):
                 self.current_context = "secret"
                 self._handle_secret_sub_instruction(instruction, parts)
                 return
-            else:
-                raise ValueError(f"{instruction} can only be used within a context (SERVER, AGENT, etc.)")
+            raise ValueError(f"{instruction} can only be used within a context (SERVER, AGENT, etc.)")
 
         if self.current_context == "server":
             self._handle_server_sub_instruction(instruction, parts)
@@ -746,8 +748,8 @@ class AgentfileParser:
                 raise ValueError("PLAN_ITERATIONS requires a number")
             try:
                 orchestrator.plan_iterations = int(parts[1])
-            except ValueError:
-                raise ValueError(f"Invalid number for PLAN_ITERATIONS: {parts[1]}")
+            except ValueError as exc:
+                raise ValueError(f"Invalid number for PLAN_ITERATIONS: {parts[1]}") from exc
         elif instruction == "HUMAN_INPUT":
             if len(parts) < 2:
                 raise ValueError("HUMAN_INPUT requires true/false")
