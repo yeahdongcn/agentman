@@ -175,7 +175,7 @@ INSTRUCTION Route queries based on data source type
 ORCHESTRATOR project_manager
 AGENTS developer tester deployer
 PLAN_TYPE iterative
-MAX_ITERATIONS 5
+PLAN_ITERATIONS 5
 HUMAN_INPUT true
 ```
 
