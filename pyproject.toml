@@ -1,6 +1,6 @@
 [project]
 name = "agentman-mcp"
-version = "0.1.2"
+version = "0.1.3"
 description = "A tool for building and managing AI agents"
 readme = "README.md"
 license = "MIT"
