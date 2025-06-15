@@ -21,7 +21,7 @@ Install the agentman package and start building AI agents in minutes:
 
 ```bash
 pip install agentman-mcp                    # Install agentman
-agentman build .                           # Build agent from Agentfile
+agentman build .                            # Build agent from Agentfile
 agentman run --from-agentfile -t my-agent . # Build and run agent
 ```
 
