@@ -4,7 +4,7 @@
 <a href="https://pypi.org/project/agentman-mcp/"><img src="https://img.shields.io/pypi/v/agentman-mcp?color=%2334D058&label=pypi" alt="PyPI version" /></a>
 <a href="https://pypi.org/project/agentman-mcp/"><img src="https://img.shields.io/pypi/pyversions/agentman-mcp.svg?color=brightgreen" alt="Python versions" /></a>
 <a href="https://github.com/yeahdongcn/agentman/issues"><img src="https://img.shields.io/github/issues-raw/yeahdongcn/agentman" alt="GitHub Issues" /></a>
-<img alt="PyPI Downloads" src="https://img.shields.io/pepy/dt/agentman-mcp?label=downloads&color=brightgreen"/>
+<a href="https://pepy.tech/projects/agentman-mcp"><img alt="Pepy Total Downloads" src="https://img.shields.io/pepy/dt/agentman-mcp?label=pypi%20%7C%20downloads&color=brightgreen"/></a>
 <a href="https://github.com/yeahdongcn/agentman/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/agentman-mcp?color=brightgreen" alt="License" /></a>
 </p>
 
@@ -471,17 +471,8 @@ agentman/
 git clone https://github.com/yeahdongcn/agentman.git
 cd agentman
 
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Run tests
-make test
-
-# Run with coverage
-make test-coverage
-
-# Format code
-make format
+# Install
+make install
 ```
 
 ## 🧪 Testing
@@ -490,15 +481,10 @@ Agentman includes comprehensive test suites with high coverage:
 
 ```bash
 # Run all tests
-pytest
+make test
 
-# Run with coverage
-pytest --cov=agentman tests/
-
-# Run specific test modules
-pytest tests/test_agent_builder.py
-pytest tests/test_agentfile_parser.py
-pytest tests/test_prompt_txt_support.py
+# Run tests with coverage
+make test-cov
 ```
 
 ### Test Coverage
