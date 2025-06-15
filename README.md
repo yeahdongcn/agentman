@@ -1,46 +1,47 @@
 # 🤖 Agentman: A tool for building and managing AI agents
 
-[![PyPI version](https://img.shields.io/pypi/v/agentman-mcp.svg)](https://pypi.org/project/agentman-mcp/)
-[![Python versions](https://img.shields.io/pypi/pyversions/agentman-mcp.svg)](https://pypi.org/project/agentman-mcp/)
-[![GitHub Issues](https://img.shields.io/github/issues/yeahdongcn/agentman.svg)](https://github.com/yeahdongcn/agentman/issues)
-[![Pepy Total Downloads](https://img.shields.io/pepy/dt/agentman-mcp?label=pypi%20%7C%20downloads)](https://pepy.tech/projects/agentman-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<p align="center">
+<a href="https://pypi.org/project/agentman-mcp/"><img src="https://img.shields.io/pypi/v/agentman-mcp?color=%2334D058&label=pypi" alt="PyPI version" /></a>
+<a href="https://pypi.org/project/agentman-mcp/"><img src="https://img.shields.io/pypi/pyversions/agentman-mcp.svg?color=brightgreen" alt="Python versions" /></a>
+<a href="https://github.com/yeahdongcn/agentman/issues"><img src="https://img.shields.io/github/issues-raw/yeahdongcn/agentman" alt="GitHub Issues" /></a>
+<img alt="PyPI Downloads" src="https://img.shields.io/pepy/dt/agentman-mcp?label=downloads&color=brightgreen"/>
+<a href="https://github.com/yeahdongcn/agentman/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/agentman-mcp?color=brightgreen" alt="License" /></a>
+</p>
 
-Agentman is a powerful Docker-like tool for building, managing, and deploying AI agents using the Model Context Protocol (MCP). With its intuitive `Agentfile` syntax, you can define complex multi-agent workflows and deploy them as containerized applications with a single command.
+---
 
-> 🤖 **AI-Driven Development**: This project is almost entirely coded by Claude Sonnet 4 + AI Agents, showcasing the power of AI-assisted software development. From architecture design to comprehensive testing, AI has been the primary developer, demonstrating the future of collaborative human-AI programming.
+**Agentman** is a powerful Docker-like tool for building, managing, and deploying AI agents using the Model Context Protocol (MCP). With its intuitive `Agentfile` syntax, you can define complex multi-agent workflows and deploy them as containerized applications with a single command.
 
-## 📦 Installation
+> [!TIP]
+> **AI-Driven Development**: This project showcases the future of software development - almost entirely coded by Claude Sonnet 4 + AI Agents, demonstrating how AI can handle complex architecture design, implementation, comprehensive testing, and documentation.
 
-```bash
-pip install agentman-mcp
-```
+## Get Started
 
-## ✨ Features
-
-- **🐳 Docker-like Interface**: Familiar `build` and `run` commands with Docker-compatible syntax
-- **📝 Declarative Configuration**: Define agents, workflows, and dependencies in simple `Agentfile` format
-- **🔗 Multi-Agent Workflows**: Support for chains, routers, and orchestrators
-- **🔌 MCP Integration**: Built-in support for Model Context Protocol servers
-- **🚀 One-Command Deploy**: Build and run containerized agents instantly
-- **🔐 Secure Secrets Management**: Environment-based secret handling
-- **🎯 Production Ready**: Generate complete Docker environments with all dependencies
-
-## 🚀 Quick Start
-
-### Installation
+Install the agentman package and start building AI agents in minutes:
 
 ```bash
-pip install agentman-mcp
+pip install agentman-mcp                    # Install agentman
+agentman build .                           # Build agent from Agentfile
+agentman run --from-agentfile -t my-agent . # Build and run agent
 ```
 
-### 30-Second Demo
+### Prerequisites
 
-Create a simple URL-to-social-media agent in 3 steps:
+- **Python 3.10+** installed on your system
+- **Docker** installed and running
+- **Basic understanding** of AI agents and MCP concepts
 
-1. **Create an Agentfile:**
+### Your First Agent
+
+Create a URL-to-social-media content pipeline in under 5 minutes:
+
+**1. Create a new directory:**
+```bash
+mkdir my-first-agent && cd my-first-agent
+```
+
+**2. Create an Agentfile:**
 ```dockerfile
-# Agentfile
 FROM yeahdongcn/agentman-base:latest
 MODEL generic.qwen3:latest
 
@@ -48,71 +49,116 @@ SECRET GENERIC
 API_KEY ollama
 BASE_URL http://host.docker.internal:11434/v1
 
-# Fetch MCP server for URL fetching
 MCP_SERVER fetch
 COMMAND uvx
 ARGS mcp-server-fetch
 TRANSPORT stdio
 
-# URL fetcher agent
 AGENT url_fetcher
 INSTRUCTION Given a URL, provide a complete and comprehensive summary
 SERVERS fetch
 
-# Social media post writer agent
 AGENT social_media
 INSTRUCTION Write a 280 character social media post for any given text. Respond only with the post, never use hashtags.
 
-# Chain that connects url_fetcher -> social_media
 CHAIN post_writer
 SEQUENCE url_fetcher social_media
 
 CMD ["python", "agent.py"]
 ```
 
-2. **Build and run:**
+**3. Build and run:**
 ```bash
-agentman run --from-agentfile -t my-agent .
+agentman run --from-agentfile -t my-first-agent .
 ```
 
-3. **Your AI agent is now running!** 🎉
+**4. Test your agent** by providing a URL when prompted!
+
+### Adding Default Prompts
+
+Make your agent start automatically with predefined tasks:
+
+```bash
+echo "Fetch and summarize https://github.com/yeahdongcn/agentman and create a social media post about it." > prompt.txt
+agentman run --from-agentfile -t my-agent-with-prompt .
+```
+
+Your agent will now automatically execute this prompt on startup! 🎉
+
+## Overview
+
+> [!IMPORTANT]
+> Agentman leverages the [FastAgent](https://github.com/evalstate/fast-agent) framework as its foundation, providing robust agent infrastructure and seamless MCP integration. Both Anthropic (Claude family) and OpenAI (GPT-4 family) models are fully supported.
+
+**`agentman`** enables you to create and deploy sophisticated AI agents and workflows in minutes. It is the first Docker-like framework with complete end-to-end MCP (Model Context Protocol) support, bringing familiar containerization concepts to AI agent development.
+
+The simple declarative `Agentfile` syntax lets you concentrate on composing your prompts and MCP servers to build effective agents, while Agentman handles the complex orchestration, containerization, and deployment automatically.
+
+### Key Capabilities
+
+- **🐳 Docker-compatible Interface**: Familiar `build` and `run` commands with container-like semantics
+- **📝 Declarative Configuration**: Define agents, workflows, and dependencies in simple `Agentfile` format
+- **🔗 Multi-Agent Orchestration**: Support for chains, routers, parallel execution, and complex workflows
+- **🔌 Native MCP Integration**: Built-in support for Model Context Protocol servers with zero configuration
+- **📄 Intelligent Prompt Loading**: Automatically detect and load default prompts from `prompt.txt` files
+- **🚀 Production-Ready Deployment**: Generate optimized Docker containers with all dependencies
+- **🔐 Secure Secrets Management**: Environment-based secret handling with templating support
+- **🧪 Comprehensive Testing**: 91%+ test coverage ensuring reliability and maintainability
+
+### Agent Application Development
+
+Prompts and configurations that define your Agent Applications are stored in simple files, with minimal boilerplate, enabling simple management and version control.
+
+Chat with individual Agents and Components before, during and after workflow execution to tune and diagnose your application. Agents can request human input to get additional context for task completion.
+
+Simple model selection makes testing Model <-> MCP Server interaction painless.
+
+## 🚀 Quick Demo
+
+Want to see Agentman in action? Watch our demonstration:
 
 [![Demo](https://img.youtube.com/vi/P4bRllSbNX8/0.jpg)](https://www.youtube.com/watch?v=P4bRllSbNX8)
+
+**What you'll see:**
+- Creating an `Agentfile` with multi-agent workflow
+- Building and running the agent with one command
+- Real-time agent execution with URL fetching and social media post generation
 
 ## 📖 Detailed Usage
 
 ### Building Agents
 
-Build agent files from an Agentfile (Docker-like syntax):
+Build agent applications from an Agentfile using Docker-like syntax:
 
 ```bash
 # Build in current directory
 agentman build .
 
-# Build with custom Agentfile and output
+# Build with custom Agentfile and output directory
 agentman build -f MyAgentfile -o my-output .
 
 # Build and create Docker image
 agentman build --build-docker -t my-agent:v1.0 .
 ```
 
-Generated files include:
-- `agent.py` - Main agent application
-- `fastagent.config.yaml` - FastAgent configuration
-- `fastagent.secrets.yaml` - Secrets template
-- `Dockerfile` - Container definition
-- `requirements.txt` - Python dependencies
-- `.dockerignore` - Docker build optimization
+**Generated files include:**
+- **`agent.py`** - Main agent application with runtime logic
+- **`fastagent.config.yaml`** - FastAgent configuration and workflow definitions
+- **`fastagent.secrets.yaml`** - Secrets template for environment variables
+- **`Dockerfile`** - Optimized container definition with multi-stage builds
+- **`requirements.txt`** - Python dependencies (auto-generated from MCP servers)
+- **`.dockerignore`** - Docker build optimization (excludes unnecessary files)
+- **`prompt.txt`** - Default prompt file (copied if exists in source directory)
 
 ### Running Agents
 
-Run existing images or build-and-run from Agentfile:
+Deploy and run agent containers with flexible options:
 
 ```bash
 # Run existing image
 agentman run my-agent:latest
 
-# Build from Agentfile and run
+# Build from Agentfile and run (recommended for development)
 agentman run --from-agentfile --path ./my-project
 
 # Interactive mode with port forwarding
@@ -123,6 +169,8 @@ agentman run --rm my-agent:latest
 ```
 
 ## 🏗️ Agentfile Reference
+
+The `Agentfile` uses a Docker-like syntax to define your agent applications. Here's a comprehensive reference:
 
 ### Base Configuration
 
@@ -135,6 +183,8 @@ CMD ["python", "agent.py"]             # Container startup command
 
 ### MCP Servers
 
+Define external MCP servers that provide tools and capabilities:
+
 ```dockerfile
 MCP_SERVER filesystem
 COMMAND uvx
@@ -143,7 +193,9 @@ TRANSPORT stdio
 ENV PATH_PREFIX /app/data
 ```
 
-### Agents
+### Agent Definitions
+
+Create individual agents with specific roles and capabilities:
 
 ```dockerfile
 AGENT assistant
@@ -154,7 +206,7 @@ USE_HISTORY true
 HUMAN_INPUT false
 ```
 
-### Workflows
+### Workflow Orchestration
 
 **Chains** (Sequential processing):
 ```dockerfile
@@ -181,50 +233,159 @@ HUMAN_INPUT true
 
 ### Secrets Management
 
+Secure handling of API keys and sensitive configuration:
+
 ```dockerfile
-# Simple references
+# Environment variable references
 SECRET OPENAI_API_KEY
 SECRET ANTHROPIC_API_KEY
 
-# Inline values (for development)
+# Inline values (for development only)
 SECRET DATABASE_URL postgresql://localhost:5432/mydb
 
-# Grouped secrets
+# Grouped secrets with multiple values
 SECRET CUSTOM_API
 API_KEY your_key_here
 BASE_URL https://api.example.com
 TIMEOUT 30
 ```
 
+### Default Prompt Support
+
+Agentman automatically detects and integrates `prompt.txt` files, providing zero-configuration default prompts for your agents.
+
+#### 🌟 **Key Features**
+- **🔍 Automatic Detection**: Simply place a `prompt.txt` file in your project root
+- **🐳 Docker Integration**: Automatically copied into containers during build
+- **🔄 Runtime Loading**: Agent checks for and loads prompt content at startup
+- **⚡ Zero Configuration**: No Agentfile modifications required
+
+#### 📋 **How It Works**
+
+1. **Build Time**: Agentman scans your project directory for `prompt.txt`
+2. **Container Build**: If found, the file is automatically copied to the Docker image
+3. **Runtime**: Generated agent checks for the file and loads its content
+4. **Execution**: Prompt content is passed to `await agent(prompt_content)` at startup
+
+#### 📁 **Project Structure Example**
+
+```
+my-agent/
+├── Agentfile                # Agent configuration
+├── prompt.txt              # ← Your default prompt (auto-loaded)
+└── agent/                  # ← Generated output directory
+    ├── agent.py            #   Generated agent with prompt loading logic
+    ├── prompt.txt          #   ← Copied during build process
+    ├── Dockerfile          #   Contains COPY prompt.txt instruction
+    └── requirements.txt    #   Python dependencies
+```
+
+#### 💡 **Example Prompts**
+
+**Task-Specific Prompt:**
+```text
+Analyze the latest GitHub releases for security vulnerabilities and generate a summary report.
+```
+
+**User-Specific Prompt:**
+```text
+I am a GitHub user with the username "yeahdongcn" and I need help updating my GitHub profile information.
+```
+
+**Complex Workflow Prompt:**
+```text
+Process the following workflow:
+1. Clone the repository https://github.com/ollama/ollama
+2. Checkout the latest release tag
+3. Analyze the changelog for breaking changes
+4. Generate a migration guide
+```
+
+#### 🛠️ **Generated Logic**
+
+When `prompt.txt` exists, Agentman automatically generates this logic in your `agent.py`:
+
+```python
+import os
+
+# Check for default prompt file
+prompt_file = "prompt.txt"
+if os.path.exists(prompt_file):
+    with open(prompt_file, 'r', encoding='utf-8') as f:
+        prompt_content = f.read().strip()
+    if prompt_content:
+        await agent(prompt_content)
+```
+
+This ensures your agent automatically executes the default prompt when the container starts.
+
 ## 🎯 Example Projects
 
-### 1. Content Processing Pipeline
+### 1. GitHub Profile Manager (with Default Prompt)
+
+A comprehensive GitHub profile management agent that automatically loads a default prompt.
+
+**Project Structure:**
+```
+github-profile-manager/
+├── Agentfile
+├── prompt.txt          # Default prompt automatically loaded
+└── agent/              # Generated files
+    ├── agent.py
+    ├── prompt.txt      # Copied during build
+    └── ...
+```
+
+**prompt.txt:**
+```text
+I am a GitHub user with the username "yeahdongcn" and I need help updating my GitHub profile information.
+```
+
+**Key Features:**
+- Multi-agent chain for profile data collection, generation, and updating
+- Automatic prompt loading from `prompt.txt`
+- Integration with GitHub MCP server and fetch capabilities
+
+### 2. GitHub Repository Maintainer
+
+A specialized agent for maintaining GitHub repositories with automated release management.
+
+**Project Structure:**
+```
+github-maintainer/
+├── Agentfile
+├── prompt.txt          # Default task: "Clone https://github.com/ollama/ollama and checkout the latest release tag."
+└── agent/              # Generated files
+```
+
+**Key Features:**
+- Release checking and validation
+- Repository cloning and management
+- Automated maintenance workflows
+
+### 3. URL-to-Social Content Pipeline
+
+A simple yet powerful content processing chain for social media.
+
+**Project Structure:**
+```
+chain-ollama/
+├── Agentfile
+└── agent/              # Generated files
+```
+
+**Key Features:**
+- URL content fetching and summarization
+- Social media post generation (280 characters, no hashtags)
+- Sequential agent chain processing
+
+### 4. Advanced Multi-Agent System
+
+Example of a more complex multi-agent system with routers and orchestrators:
+
 ```dockerfile
 FROM yeahdongcn/agentman-base:latest
 MODEL anthropic/claude-3-sonnet
-
-MCP_SERVER brave
-COMMAND uvx
-ARGS mcp-server-brave-search
-
-AGENT researcher
-INSTRUCTION Research topics and gather comprehensive information
-SERVERS brave
-
-AGENT writer
-INSTRUCTION Transform research into engaging blog posts
-
-AGENT editor
-INSTRUCTION Review and improve content for clarity and engagement
-
-CHAIN content_pipeline
-SEQUENCE researcher writer editor
-```
-
-### 2. Customer Support System
-```dockerfile
-FROM yeahdongcn/agentman-base:latest
-MODEL anthropic/claude-3-haiku
 
 MCP_SERVER database
 COMMAND uvx
@@ -246,34 +407,6 @@ ROUTER support_router
 AGENTS support_agent escalation_agent
 INSTRUCTION Route based on inquiry complexity and urgency
 ```
-
-### 3. Data Analysis Workflow
-```dockerfile
-FROM yeahdongcn/agentman-base:latest
-MODEL anthropic/claude-3-sonnet
-
-MCP_SERVER filesystem
-COMMAND uvx
-ARGS mcp-server-filesystem
-
-AGENT data_loader
-INSTRUCTION Load and validate data from various sources
-SERVERS filesystem
-
-AGENT analyst
-INSTRUCTION Perform statistical analysis and generate insights
-SERVERS filesystem
-
-AGENT visualizer
-INSTRUCTION Create charts and visual representations
-SERVERS filesystem
-
-ORCHESTRATOR data_science_lead
-AGENTS data_loader analyst visualizer
-PLAN_TYPE full
-INSTRUCTION Coordinate comprehensive data analysis projects
-```
-
 ## 🔧 Advanced Configuration
 
 ### Custom Base Images
@@ -312,6 +445,26 @@ MODEL anthropic/claude-3-opus
 INSTRUCTION Handle complex analysis tasks
 ```
 
+## 📁 Project Structure
+
+```
+agentman/
+├── src/agentman/           # Core source code
+│   ├── __init__.py
+│   ├── cli.py             # Command-line interface
+│   ├── agent_builder.py   # Agent building logic
+│   ├── agentfile_parser.py # Agentfile parsing
+│   └── common.py          # Shared utilities
+├── examples/              # Example projects
+│   ├── github-profile-manager/
+│   ├── github-maintainer/
+│   ├── chain-ollama/
+│   └── chain-aliyun/
+├── tests/                 # Comprehensive test suite
+├── docker/               # Docker base images
+└── README.md             # This file
+```
+
 ## 🏗️ Building from Source
 
 ```bash
@@ -333,7 +486,7 @@ make format
 
 ## 🧪 Testing
 
-Agentman includes comprehensive test suites:
+Agentman includes comprehensive test suites with high coverage:
 
 ```bash
 # Run all tests
@@ -345,9 +498,15 @@ pytest --cov=agentman tests/
 # Run specific test modules
 pytest tests/test_agent_builder.py
 pytest tests/test_agentfile_parser.py
+pytest tests/test_prompt_txt_support.py
 ```
 
-The project maintains high test coverage with 91%+ coverage for core modules.
+### Test Coverage
+- **91%+ overall coverage** across core modules
+- **Agent Builder**: Comprehensive tests for agent generation and Docker integration
+- **Agentfile Parser**: Complete syntax parsing and validation tests
+- **Prompt.txt Support**: Full coverage of automatic prompt detection and loading
+- **Dockerfile Generation**: Tests for container build optimization
 
 ## 🤝 Contributing
 
@@ -372,9 +531,11 @@ We welcome contributions! This project serves as a showcase of AI-driven develop
 
 ## 📋 System Requirements
 
-- Python 3.10+
-- Docker (for containerization)
-- Unix-like system (Linux, macOS, WSL2)
+- **Python**: 3.10+ (supports 3.10, 3.11, 3.12, 3.13)
+- **Docker**: Required for containerization and running agents
+- **Operating System**: Unix-like systems (Linux, macOS, WSL2)
+- **Memory**: 2GB+ RAM recommended for multi-agent workflows
+- **Storage**: 1GB+ available space for base images and dependencies
 
 ## 📄 License
 
@@ -382,13 +543,23 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- **🤖 AI-Powered Development**: Almost entirely coded by Claude Sonnet 4 + AI Agents, demonstrating the future of collaborative human-AI software development
-- **🏗️ Built on [Fast-Agent](https://github.com/evalstate/fast-agent)**: This project heavily relies on the fast-agent framework as its foundation, providing the core agent infrastructure and MCP integration
-- **🐳 Inspired by [Podman](https://github.com/containers/podman)**: The name "Agentman" is inspired by Podman, the container engine that provides a Docker-compatible command-line interface. Like Podman for containers, Agentman aims to provide an intuitive, powerful CLI for AI agent management
-- Inspired by Docker's intuitive command-line interface
-- Comprehensive testing and documentation generated through AI assistance
-- Achieved 91%+ test coverage through AI-driven test generation
+- **🤖 AI-Powered Development**: This project showcases the future of software development - almost entirely coded by Claude Sonnet 4 + AI Agents, demonstrating how AI can handle complex architecture design, implementation, comprehensive testing, and documentation
+- **🏗️ Built on [FastAgent](https://github.com/evalstate/fast-agent)**: Agentman leverages the fast-agent framework as its foundation, providing robust agent infrastructure and seamless MCP integration
+- **🐳 Inspired by [Podman](https://github.com/containers/podman)**: Just as Podman provides a Docker-compatible interface for containers, Agentman brings familiar containerization concepts to AI agent management
+- **🧪 Test-Driven Excellence**: Achieved 91%+ test coverage through AI-driven test generation, ensuring reliability and maintainability
+- **🌟 Community-Driven**: Built with the vision of making AI agent development accessible to everyone
 
 ---
 
-**Ready to build your first AI agent?** Start with our [Quick Start](#-quick-start) guide and join the growing community of AI agent developers! 🚀
+<div align="center">
+
+**🚀 Ready to revolutionize your AI workflows?**
+
+**[Get Started](#get-started)** • **[View Examples](#-example-projects)** • **[Contribute](#-contributing)**
+
+*Join thousands of developers building the future with AI agents* ✨
+
+[![GitHub stars](https://img.shields.io/github/stars/yeahdongcn/agentman?style=social)](https://github.com/yeahdongcn/agentman)
+[![PyPI downloads](https://img.shields.io/pypi/dm/agentman-mcp?color=blue)](https://pypi.org/project/agentman-mcp/)
+
+</div>
