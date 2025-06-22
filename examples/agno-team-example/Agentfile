@@ -1,0 +1,17 @@
+FROM yeahdongcn/agentman-base:latest
+FRAMEWORK agno
+MODEL groq/llama3-8b-8192
+
+SECRET GROQ_API_KEY
+SECRET GROQ_BASE_URL
+
+AGENT web_researcher
+INSTRUCTION You are a web research specialist. Search for information, analyze sources, and provide comprehensive research findings.
+SERVERS web_search
+
+AGENT data_analyst
+INSTRUCTION You are a data analysis expert. Analyze financial data, create reports, and provide investment insights.
+SERVERS finance
+
+MCP_SERVER web_search
+MCP_SERVER finance

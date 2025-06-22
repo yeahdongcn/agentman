@@ -12,7 +12,7 @@ maintainers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "fast-agent-mcp>=0.2.31",
+    "fast-agent-mcp>=0.2.33",
 ]
 keywords = ["ai", "agents", "mcp", "model-context-protocol", "docker", "containerization", "automation"]
 classifiers = [
