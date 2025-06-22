@@ -3,7 +3,7 @@
 
 def version():
     """Return the current version of Agentman."""
-    return "0.1.5"
+    return "0.1.6"
 
 
 def print_version(args):
