@@ -21,7 +21,7 @@ wheels = [
 
 [[package]]
 name = "agentman-mcp"
-version = "0.1.5"
+version = "0.1.6"
 source = { editable = "." }
 dependencies = [
     { name = "fast-agent-mcp" },
@@ -44,7 +44,7 @@ publish = [
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=25.1.0" },
     { name = "build", marker = "extra == 'publish'", specifier = ">=1.0.0" },
-    { name = "fast-agent-mcp", specifier = ">=0.2.31" },
+    { name = "fast-agent-mcp", specifier = ">=0.2.33" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=6.0.1" },
     { name = "pylint", marker = "extra == 'dev'", specifier = ">=3.0.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
@@ -647,7 +647,7 @@ wheels = [
 
 [[package]]
 name = "fast-agent-mcp"
-version = "0.2.31"
+version = "0.2.33"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "a2a-types" },
@@ -673,9 +673,9 @@ dependencies = [
     { name = "tensorzero" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8b/99/5f57af014f7f99ceb6a7d8a8f1639c41ce28ed6c2461bff17c3c5be9a7c8/fast_agent_mcp-0.2.31.tar.gz", hash = "sha256:61163cecca93de369459ab60be1b5d5e345761c442ef34a9f4ee7105d47415c9", size = 341370, upload-time = "2025-06-12T10:15:30.11Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ac/d7/91dfc506367afdd8e334262463e0388f775c8d16efd34425c5cf7333596b/fast_agent_mcp-0.2.33.tar.gz", hash = "sha256:835fd024044a3d42f731b1bf5d7c2aff4f733d65ffabe6cb9bb5c6d0683c1b9f", size = 342014, upload-time = "2025-06-19T19:49:12.301Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/84/083d76601b7822f2a2b18b0ef7b5b931115769dbb3f8893b143cf951358b/fast_agent_mcp-0.2.31-py3-none-any.whl", hash = "sha256:f308e4ccc2b4c7d8bcde2317d9332d6359d79830aeb6b17957c4d791740b85ae", size = 344657, upload-time = "2025-06-12T10:15:28.588Z" },
+    { url = "https://files.pythonhosted.org/packages/de/af/76ed084f97f1e125fc389b1080552c3cdc46660be4077bd8a50c3918987a/fast_agent_mcp-0.2.33-py3-none-any.whl", hash = "sha256:348e7bc2f96b27148d11721565ccb004b9d07ced773de034ae0a40ab892596b8", size = 345161, upload-time = "2025-06-19T19:49:10.678Z" },
 ]
 
 [[package]]

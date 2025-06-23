@@ -2,7 +2,7 @@
 FROM yeahdongcn/agentman-base:latest
 MODEL qwen-plus
 
-SECRET ALIYUN_API_KEY sk-100
+SECRET ALIYUN_API_KEY sk-...
 
 # Fetch MCP server for URL fetching
 MCP_SERVER fetch

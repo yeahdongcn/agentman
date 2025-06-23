@@ -1,0 +1,17 @@
+FROM yeahdongcn/agentman-base:latest
+FRAMEWORK agno
+MODEL qwen-plus
+
+SECRET OPENAI_API_KEY sk-...
+SECRET OPENAI_BASE_URL https://dashscope.aliyuncs.com/compatible-mode/v1
+
+AGENT assistant
+INSTRUCTION You are a helpful AI assistant that can search the web and provide comprehensive answers.
+SERVERS web_search
+
+MCP_SERVER web_search
+COMMAND uvx
+ARGS mcp-server-fetch
+TRANSPORT stdio
+
+CMD ["python", "agent.py"]

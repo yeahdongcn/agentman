@@ -25,6 +25,28 @@ agentman build .                            # Build agent from Agentfile
 agentman run --from-agentfile -t my-agent . # Build and run agent
 ```
 
+## 🧠 Framework Support
+
+Agentman supports two powerful AI agent frameworks:
+
+### **FastAgent** (Default)
+- **Decorator-based approach** with `@fast.agent()` and `@fast.chain()`
+- **MCP-first design** with seamless tool integration
+- **Production-ready** with comprehensive logging and monitoring
+- **Configuration**: Uses `fastagent.config.yaml` and `fastagent.secrets.yaml`
+
+### **Agno**
+- **Class-based approach** with `Agent()` and `Team()`
+- **Multi-model support** for OpenAI, Anthropic, and more
+- **Rich tool ecosystem** with built-in integrations
+- **Configuration**: Uses environment variables via `.env` file
+
+**Switch between frameworks:**
+```dockerfile
+FRAMEWORK fast-agent  # Default
+FRAMEWORK agno        # Alternative framework
+```
+
 ### Prerequisites
 
 - **Python 3.10+** installed on your system
@@ -176,10 +198,30 @@ The `Agentfile` uses a Docker-like syntax to define your agent applications. Her
 
 ```dockerfile
 FROM yeahdongcn/agentman-base:latest   # Base image
+FRAMEWORK fast-agent                   # AI framework (fast-agent or agno)
 MODEL anthropic/claude-3-sonnet        # Default model for agents
 EXPOSE 8080                            # Expose ports
 CMD ["python", "agent.py"]             # Container startup command
 ```
+
+### Framework Configuration
+
+Choose between supported AI agent frameworks:
+
+```dockerfile
+FRAMEWORK fast-agent  # Default: FastAgent framework
+FRAMEWORK agno        # Alternative: Agno framework
+```
+
+**Framework Differences:**
+
+| Feature | FastAgent | Agno |
+|---------|-----------|------|
+| **API Style** | Decorator-based (`@fast.agent()`) | Class-based (`Agent()`) |
+| **Configuration** | YAML files | Environment variables |
+| **Model Support** | MCP-optimized models | Multi-provider support |
+| **Tool Integration** | MCP-first | Rich ecosystem |
+| **Use Case** | Production MCP workflows | Research & experimentation |
 
 ### MCP Servers
 

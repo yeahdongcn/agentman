@@ -217,6 +217,7 @@ class AgentfileConfig:
 
     base_image: str = "yeahdongcn/agentman-base:latest"
     default_model: Optional[str] = None
+    framework: str = "fast-agent"  # "fast-agent" or "agno"
     servers: Dict[str, MCPServer] = field(default_factory=dict)
     agents: Dict[str, Agent] = field(default_factory=dict)
     routers: Dict[str, Router] = field(default_factory=dict)
@@ -305,7 +306,13 @@ class AgentfileParser:
 
         # Agentman-specific instructions (not Docker)
         if instruction == "MODEL":
-            self._handle_model(parts)
+            # Check if we're in a context that should handle MODEL as sub-instruction
+            if self.current_context in ["agent"]:
+                self._handle_sub_instruction(instruction, parts)
+            else:
+                self._handle_model(parts)
+        elif instruction == "FRAMEWORK":
+            self._handle_framework(parts)
         elif instruction in ["SERVER", "MCP_SERVER"]:
             self._handle_server(parts)
         elif instruction == "AGENT":
@@ -436,6 +443,16 @@ class AgentfileParser:
         if len(parts) < 2:
             raise ValueError("MODEL requires a model name")
         self.config.default_model = self._unquote(parts[1])
+        self.current_context = None
+
+    def _handle_framework(self, parts: List[str]):
+        """Handle FRAMEWORK instruction."""
+        if len(parts) < 2:
+            raise ValueError("FRAMEWORK requires a framework name")
+        framework = self._unquote(parts[1]).lower()
+        if framework not in ["fast-agent", "agno"]:
+            raise ValueError(f"Unsupported framework: {framework}. Supported: fast-agent, agno")
+        self.config.framework = framework
         self.current_context = None
 
     def _handle_server(self, parts: List[str]):

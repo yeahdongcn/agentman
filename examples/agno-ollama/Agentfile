@@ -1,0 +1,20 @@
+FROM yeahdongcn/agentman-base:latest
+FRAMEWORK agno
+MODEL ollama/llama3.2
+
+SECRET OLLAMA_API_KEY your-api-key-here
+SECRET OLLAMA_BASE_URL http://localhost:11434/v1
+
+MCP_SERVER web_search
+COMMAND uvx
+ARGS mcp-server-duckduckgo
+TRANSPORT stdio
+
+AGENT assistant
+INSTRUCTION You are a helpful AI assistant powered by Ollama that can search the web and provide comprehensive answers.
+SERVERS web_search
+MODEL ollama/llama3.2
+USE_HISTORY true
+HUMAN_INPUT false
+
+CMD ["python", "agent.py"]
