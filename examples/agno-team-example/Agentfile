@@ -1,9 +1,9 @@
 FROM yeahdongcn/agentman-base:latest
 FRAMEWORK agno
-MODEL groq/llama3-8b-8192
+MODEL qwen-plus
 
-SECRET GROQ_API_KEY
-SECRET GROQ_BASE_URL
+SECRET OPENAI_API_KEY sk-...
+SECRET OPENAI_BASE_URL https://dashscope.aliyuncs.com/compatible-mode/v1
 
 AGENT web_researcher
 INSTRUCTION You are a web research specialist. Search for information, analyze sources, and provide comprehensive research findings.
