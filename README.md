@@ -139,7 +139,13 @@ Simple model selection makes testing Model <-> MCP Server interaction painless.
 
 Want to see Agentman in action? Watch our demonstration:
 
+### fast-agent - Post Writer
+
 [![Demo](https://img.youtube.com/vi/P4bRllSbNX8/0.jpg)](https://www.youtube.com/watch?v=P4bRllSbNX8)
+
+### Agno - GitHub Profile Summary
+
+[![Demo](https://img.youtube.com/vi/UP3Vmij89Yo/0.jpg)](https://www.youtube.com/watch?v=UP3Vmij89Yo)
 
 **What you'll see:**
 - Creating an `Agentfile` with multi-agent workflow
