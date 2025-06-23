@@ -29,13 +29,13 @@ agentman run --from-agentfile -t my-agent . # Build and run agent
 
 Agentman supports two powerful AI agent frameworks:
 
-### **FastAgent** (Default)
+### [**FastAgent**](https://github.com/evalstate/fast-agent) (Default)
 - **Decorator-based approach** with `@fast.agent()` and `@fast.chain()`
 - **MCP-first design** with seamless tool integration
 - **Production-ready** with comprehensive logging and monitoring
 - **Configuration**: Uses `fastagent.config.yaml` and `fastagent.secrets.yaml`
 
-### **Agno**
+### [**Agno**](https://github.com/agno-agi/agno)
 - **Class-based approach** with `Agent()` and `Team()`
 - **Multi-model support** for OpenAI, Anthropic, and more
 - **Rich tool ecosystem** with built-in integrations
