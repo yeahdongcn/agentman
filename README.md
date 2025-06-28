@@ -1,5 +1,10 @@
 # 🤖 Agentman: A tool for building and managing AI agents
 
+<div align="center" id="top">
+  <img src="https://github.com/user-attachments/assets/11d435c9-195e-420a-bb05-b8e3b4a1c2ac" width=150 height=150 alt="agentman"></img>
+</div>
+</p>
+
 <p align="center">
 <a href="https://pypi.org/project/agentman-mcp/"><img src="https://img.shields.io/pypi/v/agentman-mcp?color=%2334D058&label=pypi" alt="PyPI version" /></a>
 <a href="https://pypi.org/project/agentman-mcp/"><img src="https://img.shields.io/pypi/pyversions/agentman-mcp.svg?color=brightgreen" alt="Python versions" /></a>
