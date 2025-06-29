@@ -15,10 +15,7 @@ class AgnoFramework(BaseFramework):
         model_lower = model_id.lower()
         if "anthropic" in model_lower or "claude" in model_lower:
             return "agno.models.anthropic.Claude"
-        elif "openai" in model_lower or "gpt" in model_lower:
-            return "agno.models.openai.OpenAILike"
-        elif "/" in model_lower:  # ollama/llama3, groq/mixtral etc.
-            # For now, these are often OpenAILike compatible
+        elif "openai" in model_lower or "gpt" in model_lower or "/" in model_lower:  # ollama/llama3, groq/mixtral etc. also use OpenAILike for now
             return "agno.models.openai.OpenAILike"
         # Add more mappings as Agno supports more specific model classes
         return "agno.models.openai.OpenAILike" # Default fallback
@@ -27,17 +24,17 @@ class AgnoFramework(BaseFramework):
         """Determines the import path and initialization string for a server/tool."""
         # This mapping should be expanded based on Agno's available tools
         # and how they map to Agentfile server types.
-        if server_name in ["web_search", "search", "browser"]:
+        if server_name in {"web_search", "search", "browser"}:
             return "agno.tools.duckduckgo.DuckDuckGoTools", "DuckDuckGoTools()"
-        elif server_name in ["finance", "yfinance", "stock"]:
+        elif server_name in {"finance", "yfinance", "stock"}:
             # Example: YFinanceTools can take parameters
             # We might need to parse server_config if it contains tool-specific settings
             return "agno.tools.yfinance.YFinanceTools", "YFinanceTools(stock_price=True, analyst_recommendations=True)"
-        elif server_name in ["file", "filesystem"]:
+        elif server_name in {"file", "filesystem"}:
             return "agno.tools.file.FileTools", "FileTools()"
-        elif server_name in ["shell", "terminal"]:
+        elif server_name in {"shell", "terminal"}:
             return "agno.tools.shell.ShellTools", "ShellTools()"
-        elif server_name in ["python", "code"]:
+        elif server_name in {"python", "code"}:
             return "agno.tools.python.PythonTools", "PythonTools()"
         # Default or unknown server
         return "", ""
@@ -115,24 +112,20 @@ class AgnoFramework(BaseFramework):
             # Construct agent definition string
             agent_def = f"{agent_var_name} = Agent(\n"
             for key, value in agent_params.items():
-                if isinstance(value, str) and (key == "model" or key == "tools" or not value.startswith('"')):
-                    # For model and tools, value is already code. For others, add quotes if not present.
-                    # Special handling for instructions to be multi-line string
-                    if key == "instructions":
-                        agent_def += f'    {key}="""{value}""",\n'
-                    else:
-                        agent_def += f"    {key}={value},\n"
-                elif isinstance(value, bool):
-                     agent_def += f"    {key}={value},\n" # Booleans don't need quotes
-                else:
-                    agent_def += f'    {key}="{value}",\n'
+                if key == "instructions": # Always triple-quote instructions
+                    agent_def += f'    instructions="""{value}""",\n'
+                elif key in ["model", "tools"]: # These are already formatted code strings
+                    agent_def += f"    {key}={value},\n"
+                elif isinstance(value, bool): # Booleans are not quoted
+                     agent_def += f"    {key}={value},\n"
+                else: # Other string values should be repr'd
+                    agent_def += f"    {key}={repr(value)},\n"
             agent_def += ")"
             agent_definitions.append(f"# Agent: {agent_config.name}\n{agent_def}\n")
 
         # Add sorted imports to script
         script_lines.extend(sorted(list(imports)))
-        script_lines.append("\n# Load environment variables from .env file")
-        script_lines.append("load_dotenv()\n")
+        script_lines.extend(("\n# Load environment variables from .env file", "load_dotenv()\n"))
 
         # Add agent definitions
         script_lines.extend(agent_definitions)
@@ -143,7 +136,13 @@ class AgnoFramework(BaseFramework):
             team_var_name = "agentteam" # Default team name, matching test expectation
             main_entity_var_name = team_var_name
 
-            team_model_str = self.config.agents.values().__iter__().__next__().model or default_model_str # Use first agent's model or default
+            # Use first agent's model or default_model_str for the team
+            first_agent_config = next(iter(self.config.agents.values()), None)
+            if first_agent_config:
+                team_model_str = first_agent_config.model or default_model_str
+            else: # Should not happen if has_multiple_agents is true and config is valid
+                team_model_str = default_model_str
+
             team_model_import_path = self._get_model_import_path(team_model_str)
             team_model_class_name = team_model_import_path.split('.')[-1]
             # Ensure model import is present (might be redundant if already added by an agent)
@@ -164,7 +163,7 @@ class AgnoFramework(BaseFramework):
 
             team_params = {
                 "name": "AgentTeam",
-                "mode": "'coordinate'", # Default mode
+                "mode": "coordinate", # Default mode
                 "model": f"{team_model_class_name}({', '.join(team_model_init_params)})",
                 "members": f"[{', '.join(agent_var_names)}]",
                 "tools": "[ReasoningTools(add_instructions=True)]", # Default team tools
@@ -178,16 +177,16 @@ class AgnoFramework(BaseFramework):
                 "show_members_responses": True,
                 "enable_agentic_context": True,
                 "add_datetime_to_instructions": True,
-                "success_criteria": "'The team has provided a complete and accurate response.'",
+                "success_criteria": "The team has provided a complete and accurate response.",
             }
             team_def = f"{team_var_name} = Team(\n"
             for key, value in team_params.items():
-                if isinstance(value, str) and (value.startswith("[") or value.startswith("'") or value.startswith('"""') or "agno.models" in value or "Tools(" in value):
+                if key in ["instructions", "members", "tools", "model"]: # these are pre-formatted or lists/code
                     team_def += f"    {key}={value},\n"
-                elif isinstance(value, bool):
+                elif isinstance(value, bool): # Booleans are not quoted
                     team_def += f"    {key}={value},\n"
-                else:
-                    team_def += f'    {key}="{value}",\n'
+                else: # Other string values (like name, mode, success_criteria) should be repr'd
+                    team_def += f"    {key}={repr(value)},\n"
             team_def += ")\n"
             script_lines.append("# Multi-Agent Team\n" + team_def)
         elif agent_var_names:
