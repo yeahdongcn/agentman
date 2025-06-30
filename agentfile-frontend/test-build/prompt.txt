@@ -1,0 +1,8 @@
+Conduct a comprehensive research and analysis project:
+
+1. Research the current state of AI agent frameworks and tools in 2024
+2. Analyze the financial performance and market position of major AI companies (NVIDIA, OpenAI, Anthropic, Google, Microsoft)
+3. Create a detailed report that combines the research findings with financial analysis
+4. Provide investment recommendations and future outlook for the AI industry
+
+Please coordinate between the research, analysis, and content creation team members to deliver a comprehensive report.
