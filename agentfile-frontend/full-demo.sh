@@ -1,0 +1,70 @@
+#!/bin/bash
+
+echo "🎯 Agentfile Frontend - Complete Demo"
+echo "====================================="
+echo ""
+
+echo "This demo shows how the Agentfile frontend works end-to-end:"
+echo ""
+
+echo "1️⃣  Testing Simple Agentfile Parsing"
+echo "------------------------------------"
+echo "Input: Simple AGNO example"
+cat ../examples/agno-example/Agentfile | head -10
+echo "..."
+echo ""
+echo "Output: Generated Dockerfile"
+./agentfile-frontend ../examples/agno-example/Agentfile | head -15
+echo "..."
+echo ""
+
+echo "2️⃣  Testing Advanced Multi-Agent Example"
+echo "----------------------------------------"
+echo "Input: Complex multi-agent system"
+cat ../examples/agno-advanced/Agentfile | head -15
+echo "..."
+echo ""
+echo "Output: Structured configurations"
+./agentfile-frontend ../examples/agno-advanced/Agentfile | grep -A 10 "agents.json"
+echo ""
+
+echo "3️⃣  Testing Chain Workflow Example"
+echo "----------------------------------"
+echo "Input: Agent chain workflow"
+cat ../examples/chain-aliyun/Agentfile | tail -10
+echo ""
+echo "Output: Chain configuration"
+./agentfile-frontend ../examples/chain-aliyun/Agentfile | grep -A 8 "chains.json"
+echo ""
+
+echo "4️⃣  Testing Orchestrator Example"
+echo "--------------------------------"
+echo "Input: GitHub maintainer orchestrator"
+./agentfile-frontend ../examples/github-maintainer/Agentfile | grep -A 5 "orchestrators.json"
+echo ""
+
+echo "🚀 Key Benefits Demonstrated:"
+echo "=============================="
+echo "✅ Agentfile syntax → Dockerfile conversion"
+echo "✅ Multi-agent system configuration"
+echo "✅ MCP server integration"
+echo "✅ Framework-specific code generation"
+echo "✅ Secret/environment management"
+echo "✅ Chain and orchestrator support"
+echo "✅ Docker-native build process"
+echo ""
+
+echo "🔮 Future Docker Buildx Integration:"
+echo "===================================="
+echo "# syntax=yeahdongcn/agentfile-frontend:latest"
+echo "FROM yeahdongcn/agentman-base:latest"
+echo "FRAMEWORK agno"
+echo "MODEL deepseek/deepseek-chat"
+echo ""
+echo "AGENT assistant"
+echo "INSTRUCTION You are a helpful AI assistant"
+echo ""
+echo "CMD [\"python\", \"agent.py\"]"
+echo ""
+echo "Then build with:"
+echo "  docker buildx build -f Agentfile -t my-agent ."
