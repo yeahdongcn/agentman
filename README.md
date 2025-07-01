@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/yeahdongcn-agentman-badge.png)](https://mseep.ai/app/yeahdongcn-agentman)
+
 # 🤖 Agentman: A tool for building and managing AI agents
 
 <div align="center" id="top">
