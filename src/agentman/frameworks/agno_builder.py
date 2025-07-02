@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any, Set
-from pathlib import Path
 
 
 @dataclass
@@ -176,10 +175,7 @@ class AgnoCodeGenerator:
         # Add instructions
         if self.config.team.instructions:
             lines.append("    instructions=[")
-            lines.extend(
-                f'        "{instruction}",'
-                for instruction in self.config.team.instructions
-            )
+            lines.extend(f'        "{instruction}",' for instruction in self.config.team.instructions)
             lines.append("    ],")
         else:
             lines.extend(
@@ -369,7 +365,7 @@ class AgnoCodeGenerator:
         """Generate model instantiation code."""
         if model_config.model_type == "claude":
             return f'model=Claude(id="{model_config.model_id}"),'
-        elif model_config.model_type == "openai":
+        if model_config.model_type == "openai":
             return (
                 'model=OpenAILike(\n'
                 f'        id="{model_config.model_id}",\n'
@@ -377,7 +373,7 @@ class AgnoCodeGenerator:
                 f'        base_url=os.getenv("{model_config.base_url_env or "OPENAI_BASE_URL"}"),\n'
                 '    ),'
             )
-        elif model_config.model_type == "custom":
+        if model_config.model_type == "custom":
             api_key_env = model_config.api_key_env or f"{model_config.provider.upper()}_API_KEY"
             base_url_env = model_config.base_url_env or f"{model_config.provider.upper()}_BASE_URL"
             return (
@@ -387,16 +383,14 @@ class AgnoCodeGenerator:
                 f'        base_url=os.getenv("{base_url_env}"),\n'
                 '    ),'
             )
-        else:
-            return f'model=OpenAILike(id="{model_config.model_id}"),'
+        return f'model=OpenAILike(id="{model_config.model_id}"),'
 
     def _generate_tool_instantiation(self, tool_config: AgnoToolConfig) -> str:
         """Generate tool instantiation code."""
         if tool_config.params:
             params_str = ", ".join(f"{k}={v}" for k, v in tool_config.params.items())
             return f"{tool_config.tool_class}({params_str})"
-        else:
-            return f"{tool_config.tool_class}()"
+        return f"{tool_config.tool_class}()"
 
 
 class AgnoConfigBuilder:
@@ -439,10 +433,10 @@ class AgnoConfigBuilder:
 
         if "anthropic" in model_lower or "claude" in model_lower:
             return AgnoModelConfig("claude", model)
-        elif "openai" in model_lower or "gpt" in model_lower:
+        if "openai" in model_lower or "gpt" in model_lower:
             return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
-        elif "/" in model:
-            provider, model_name = model.split("/", 1)
+        if "/" in model:
+            provider, _ = model.split("/", 1)
             return AgnoModelConfig(
                 "custom",
                 model,
@@ -450,8 +444,7 @@ class AgnoConfigBuilder:
                 api_key_env=f"{provider.upper()}_API_KEY",
                 base_url_env=f"{provider.upper()}_BASE_URL",
             )
-        else:
-            return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
+        return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
 
     def build_tools_for_servers(self, servers: List[str]) -> List[AgnoToolConfig]:
         """Build tool configurations for given servers, ensuring no duplicates."""

@@ -1,8 +1,7 @@
 """FastAgent framework builder using structured configuration."""
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
-from pathlib import Path
+from typing import List, Dict, Any
 
 
 @dataclass
@@ -41,30 +40,20 @@ class FastAgentCodeGenerator:
 
     def generate_agent_decorators(self) -> List[str]:
         """Generate agent decorator definitions."""
-        return [
-            self._build_agent_decorator(agent_config)
-            for agent_config in self.config.agents
-        ]
+        return [self._build_agent_decorator(agent_config) for agent_config in self.config.agents]
 
     def generate_router_decorators(self) -> List[str]:
         """Generate router decorator definitions."""
-        return [
-            self._build_router_decorator(router_config)
-            for router_config in self.config.routers
-        ]
+        return [self._build_router_decorator(router_config) for router_config in self.config.routers]
 
     def generate_chain_decorators(self) -> List[str]:
         """Generate chain decorator definitions."""
-        return [
-            self._build_chain_decorator(chain_config)
-            for chain_config in self.config.chains
-        ]
+        return [self._build_chain_decorator(chain_config) for chain_config in self.config.chains]
 
     def generate_orchestrator_decorators(self) -> List[str]:
         """Generate orchestrator decorator definitions."""
         return [
-            self._build_orchestrator_decorator(orchestrator_config)
-            for orchestrator_config in self.config.orchestrators
+            self._build_orchestrator_decorator(orchestrator_config) for orchestrator_config in self.config.orchestrators
         ]
 
     def generate_main_function(self) -> List[str]:
