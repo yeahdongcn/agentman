@@ -1,5 +1,3 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/yeahdongcn-agentman-badge.png)](https://mseep.ai/app/yeahdongcn-agentman)
-
 # 🤖 Agentman: A tool for building and managing AI agents
 
 <div align="center" id="top">
@@ -659,3 +657,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 [![Contributors](https://img.shields.io/github/contributors/yeahdongcn/agentman?color=green&label=Contributors)](https://github.com/yeahdongcn/agentman/graphs/contributors)
 
 </div>
+
+[![Verified on MseeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/e623f130-72c9-44f8-94bb-fcc8d6cc7c1d)
+
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/yeahdongcn-agentman-badge.png)](https://mseep.ai/app/yeahdongcn-agentman)
