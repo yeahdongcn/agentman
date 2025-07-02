@@ -71,64 +71,54 @@ class AgnoCodeGenerator:
         self.config = config
 
     def generate_imports(self) -> List[str]:
-        """Generate import statements based on configuration."""
-        imports = [
+        """Generate import statements based on configuration using improved import management."""
+        # Core imports that are always needed
+        imports_set = {
             "import os",
             "from agno.agent import Agent",
-            "",
-            "# Load environment variables from .env file",
             "from dotenv import load_dotenv",
-            "load_dotenv()",
-            "",
-        ]
+            "from agno.tools.reasoning import ReasoningTools",  # Always include
+        }
 
         # Add model imports
-        model_imports = set()
         for agent in self.config.agents:
             if agent.model_config:
                 if agent.model_config.model_type == "claude":
-                    model_imports.add("from agno.models.anthropic import Claude")
+                    imports_set.add("from agno.models.anthropic import Claude")
                 elif agent.model_config.model_type in ["openai", "custom"]:
-                    model_imports.add("from agno.models.openai import OpenAILike")
+                    imports_set.add("from agno.models.openai import OpenAILike")
 
         if self.config.team and self.config.team.model_config:
             if self.config.team.model_config.model_type == "claude":
-                model_imports.add("from agno.models.anthropic import Claude")
+                imports_set.add("from agno.models.anthropic import Claude")
             elif self.config.team.model_config.model_type in ["openai", "custom"]:
-                model_imports.add("from agno.models.openai import OpenAILike")
-
-        # Add default imports if no specific models found
-        if not model_imports:
-            model_imports.update(
-                [
-                    "from agno.models.openai import OpenAILike",
-                    "from agno.models.anthropic import Claude",
-                ]
-            )
-
-        imports.extend(sorted(model_imports))
+                imports_set.add("from agno.models.openai import OpenAILike")
 
         # Add tool imports
         if self.config.tool_imports:
-            imports.extend(sorted(self.config.tool_imports))
+            imports_set.update(self.config.tool_imports)
 
         # Add team import if needed
         if self.config.team:
-            imports.append("from agno.team.team import Team")
+            imports_set.add("from agno.team.team import Team")
 
-        # Add reasoning tools import (always included)
-        imports.extend(
-            [
-                "from agno.tools.reasoning import ReasoningTools",
-                "# Optional: Uncomment for advanced features",
-                "# from agno.storage.sqlite import SqliteStorage",
-                "# from agno.memory.v2.db.sqlite import SqliteMemoryDb",
-                "# from agno.memory.v2.memory import Memory",
-                "# from agno.knowledge.url import UrlKnowledge",
-                "# from agno.vectordb.lancedb import LanceDb",
-                "",
-            ]
-        )
+        # Convert to sorted list and add structure
+        imports = sorted(list(imports_set))
+        
+        # Add environment loading and optional imports
+        imports.extend([
+            "",
+            "# Load environment variables from .env file",
+            "load_dotenv()",
+            "",
+            "# Optional: Uncomment for advanced features",
+            "# from agno.storage.sqlite import SqliteStorage",
+            "# from agno.memory.v2.db.sqlite import SqliteMemoryDb",
+            "# from agno.memory.v2.memory import Memory",
+            "# from agno.knowledge.url import UrlKnowledge",
+            "# from agno.vectordb.lancedb import LanceDb",
+            "",
+        ])
 
         return imports
 
@@ -397,44 +387,42 @@ class AgnoConfigBuilder:
     """Builder for creating AgnoFrameworkConfig from agentfile configuration."""
 
     def __init__(self):
+        # Server to tool mapping using cleaner approach inspired by PR #4
         self.server_tool_mapping = {
-            "web_search": AgnoToolConfig("DuckDuckGoTools", "from agno.tools.duckduckgo import DuckDuckGoTools"),
-            "search": AgnoToolConfig("DuckDuckGoTools", "from agno.tools.duckduckgo import DuckDuckGoTools"),
-            "browser": AgnoToolConfig("DuckDuckGoTools", "from agno.tools.duckduckgo import DuckDuckGoTools"),
-            "finance": AgnoToolConfig(
-                "YFinanceTools",
-                "from agno.tools.yfinance import YFinanceTools",
-                {"stock_price": True, "analyst_recommendations": True},
-            ),
-            "yfinance": AgnoToolConfig(
-                "YFinanceTools",
-                "from agno.tools.yfinance import YFinanceTools",
-                {"stock_price": True, "analyst_recommendations": True},
-            ),
-            "stock": AgnoToolConfig(
-                "YFinanceTools",
-                "from agno.tools.yfinance import YFinanceTools",
-                {"stock_price": True, "analyst_recommendations": True},
-            ),
-            "file": AgnoToolConfig("FileTools", "from agno.tools.file import FileTools"),
-            "filesystem": AgnoToolConfig("FileTools", "from agno.tools.file import FileTools"),
-            "shell": AgnoToolConfig("ShellTools", "from agno.tools.shell import ShellTools"),
-            "terminal": AgnoToolConfig("ShellTools", "from agno.tools.shell import ShellTools"),
-            "python": AgnoToolConfig("PythonTools", "from agno.tools.python import PythonTools"),
-            "code": AgnoToolConfig("PythonTools", "from agno.tools.python import PythonTools"),
+            # Search and web tools
+            "web_search": ("agno.tools.duckduckgo.DuckDuckGoTools", "DuckDuckGoTools()"),
+            "search": ("agno.tools.duckduckgo.DuckDuckGoTools", "DuckDuckGoTools()"),
+            "browser": ("agno.tools.duckduckgo.DuckDuckGoTools", "DuckDuckGoTools()"),
+            # Finance tools
+            "finance": ("agno.tools.yfinance.YFinanceTools", "YFinanceTools(stock_price=True, analyst_recommendations=True)"),
+            "yfinance": ("agno.tools.yfinance.YFinanceTools", "YFinanceTools(stock_price=True, analyst_recommendations=True)"),
+            "stock": ("agno.tools.yfinance.YFinanceTools", "YFinanceTools(stock_price=True, analyst_recommendations=True)"),
+            # File and system tools
+            "file": ("agno.tools.file.FileTools", "FileTools()"),
+            "filesystem": ("agno.tools.file.FileTools", "FileTools()"),
+            "shell": ("agno.tools.shell.ShellTools", "ShellTools()"),
+            "terminal": ("agno.tools.shell.ShellTools", "ShellTools()"),
+            "python": ("agno.tools.python.PythonTools", "PythonTools()"),
+            "code": ("agno.tools.python.PythonTools", "PythonTools()"),
         }
 
     def build_model_config(self, model: str) -> AgnoModelConfig:
-        """Build model configuration from model string."""
+        """Build model configuration from model string using improved logic."""
         if not model:
+            # Provide sensible default as seen in PR #4
             return AgnoModelConfig("claude", "anthropic/claude-3-sonnet-20241022")
 
         model_lower = model.lower()
 
+        # Anthropic models
         if "anthropic" in model_lower or "claude" in model_lower:
             return AgnoModelConfig("claude", model)
+        
+        # OpenAI models
         if "openai" in model_lower or "gpt" in model_lower:
             return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
+        
+        # Custom models with provider prefix (e.g., "ollama/llama3", "groq/mixtral")
         if "/" in model:
             provider, _ = model.split("/", 1)
             return AgnoModelConfig(
@@ -444,6 +432,8 @@ class AgnoConfigBuilder:
                 api_key_env=f"{provider.upper()}_API_KEY",
                 base_url_env=f"{provider.upper()}_BASE_URL",
             )
+        
+        # Default fallback to OpenAI-like
         return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
 
     def build_tools_for_servers(self, servers: List[str]) -> List[AgnoToolConfig]:
@@ -452,11 +442,25 @@ class AgnoConfigBuilder:
         tools = []
         for server in servers:
             if server in self.server_tool_mapping:
-                tool = self.server_tool_mapping[server]
+                import_path, init_str = self.server_tool_mapping[server]
+                tool_class = import_path.split('.')[-1]
+                
                 # Use tool_class as the unique identifier to avoid duplicates
-                if tool.tool_class not in seen_tools:
+                if tool_class not in seen_tools:
+                    # Parse params from init_str for backward compatibility
+                    params = {}
+                    if "(" in init_str and init_str != f"{tool_class}()":
+                        # Extract parameters from init string if present
+                        if "stock_price=True" in init_str:
+                            params = {"stock_price": True, "analyst_recommendations": True}
+                    
+                    tool = AgnoToolConfig(
+                        tool_class=tool_class,
+                        import_path=f"from {'.'.join(import_path.split('.')[:-1])} import {tool_class}",
+                        params=params
+                    )
                     tools.append(tool)
-                    seen_tools.add(tool.tool_class)
+                    seen_tools.add(tool_class)
         return tools
 
     def get_tool_imports(self, tools: List[AgnoToolConfig]) -> Set[str]:
