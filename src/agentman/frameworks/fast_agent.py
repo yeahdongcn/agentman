@@ -1,10 +1,11 @@
 """Fast-Agent framework implementation for AgentMan."""
 
 from typing import List
+
 import yaml
 
 from .base import BaseFramework
-from .fast_agent_builder import FastAgentConfig, FastAgentCodeGenerator
+from .fast_agent_builder import FastAgentCodeGenerator, FastAgentConfig
 
 
 class FastAgentFramework(BaseFramework):

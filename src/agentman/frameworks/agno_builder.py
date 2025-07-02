@@ -1,7 +1,7 @@
 """Agno framework builder using structured configuration."""
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Set
+from typing import Any, Dict, List, Optional, Set
 
 
 @dataclass
@@ -104,21 +104,23 @@ class AgnoCodeGenerator:
 
         # Convert to sorted list and add structure
         imports = sorted(list(imports_set))
-        
+
         # Add environment loading and optional imports
-        imports.extend([
-            "",
-            "# Load environment variables from .env file",
-            "load_dotenv()",
-            "",
-            "# Optional: Uncomment for advanced features",
-            "# from agno.storage.sqlite import SqliteStorage",
-            "# from agno.memory.v2.db.sqlite import SqliteMemoryDb",
-            "# from agno.memory.v2.memory import Memory",
-            "# from agno.knowledge.url import UrlKnowledge",
-            "# from agno.vectordb.lancedb import LanceDb",
-            "",
-        ])
+        imports.extend(
+            [
+                "",
+                "# Load environment variables from .env file",
+                "load_dotenv()",
+                "",
+                "# Optional: Uncomment for advanced features",
+                "# from agno.storage.sqlite import SqliteStorage",
+                "# from agno.memory.v2.db.sqlite import SqliteMemoryDb",
+                "# from agno.memory.v2.memory import Memory",
+                "# from agno.knowledge.url import UrlKnowledge",
+                "# from agno.vectordb.lancedb import LanceDb",
+                "",
+            ]
+        )
 
         return imports
 
@@ -394,9 +396,18 @@ class AgnoConfigBuilder:
             "search": ("agno.tools.duckduckgo.DuckDuckGoTools", "DuckDuckGoTools()"),
             "browser": ("agno.tools.duckduckgo.DuckDuckGoTools", "DuckDuckGoTools()"),
             # Finance tools
-            "finance": ("agno.tools.yfinance.YFinanceTools", "YFinanceTools(stock_price=True, analyst_recommendations=True)"),
-            "yfinance": ("agno.tools.yfinance.YFinanceTools", "YFinanceTools(stock_price=True, analyst_recommendations=True)"),
-            "stock": ("agno.tools.yfinance.YFinanceTools", "YFinanceTools(stock_price=True, analyst_recommendations=True)"),
+            "finance": (
+                "agno.tools.yfinance.YFinanceTools",
+                "YFinanceTools(stock_price=True, analyst_recommendations=True)",
+            ),
+            "yfinance": (
+                "agno.tools.yfinance.YFinanceTools",
+                "YFinanceTools(stock_price=True, analyst_recommendations=True)",
+            ),
+            "stock": (
+                "agno.tools.yfinance.YFinanceTools",
+                "YFinanceTools(stock_price=True, analyst_recommendations=True)",
+            ),
             # File and system tools
             "file": ("agno.tools.file.FileTools", "FileTools()"),
             "filesystem": ("agno.tools.file.FileTools", "FileTools()"),
@@ -417,11 +428,11 @@ class AgnoConfigBuilder:
         # Anthropic models
         if "anthropic" in model_lower or "claude" in model_lower:
             return AgnoModelConfig("claude", model)
-        
+
         # OpenAI models
         if "openai" in model_lower or "gpt" in model_lower:
             return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
-        
+
         # Custom models with provider prefix (e.g., "ollama/llama3", "groq/mixtral")
         if "/" in model:
             provider, _ = model.split("/", 1)
@@ -432,7 +443,7 @@ class AgnoConfigBuilder:
                 api_key_env=f"{provider.upper()}_API_KEY",
                 base_url_env=f"{provider.upper()}_BASE_URL",
             )
-        
+
         # Default fallback to OpenAI-like
         return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
 
@@ -444,7 +455,7 @@ class AgnoConfigBuilder:
             if server in self.server_tool_mapping:
                 import_path, init_str = self.server_tool_mapping[server]
                 tool_class = import_path.split('.')[-1]
-                
+
                 # Use tool_class as the unique identifier to avoid duplicates
                 if tool_class not in seen_tools:
                     # Parse params from init_str for backward compatibility
@@ -453,11 +464,11 @@ class AgnoConfigBuilder:
                         # Extract parameters from init string if present
                         if "stock_price=True" in init_str:
                             params = {"stock_price": True, "analyst_recommendations": True}
-                    
+
                     tool = AgnoToolConfig(
                         tool_class=tool_class,
                         import_path=f"from {'.'.join(import_path.split('.')[:-1])} import {tool_class}",
-                        params=params
+                        params=params,
                     )
                     tools.append(tool)
                     seen_tools.add(tool_class)

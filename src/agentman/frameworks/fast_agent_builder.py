@@ -1,7 +1,7 @@
 """FastAgent framework builder using structured configuration."""
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 
 @dataclass
