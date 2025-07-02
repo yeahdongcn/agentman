@@ -176,8 +176,10 @@ class AgnoCodeGenerator:
         # Add instructions
         if self.config.team.instructions:
             lines.append("    instructions=[")
-            for instruction in self.config.team.instructions:
-                lines.append(f'        "{instruction}",')
+            lines.extend(
+                f'        "{instruction}",'
+                for instruction in self.config.team.instructions
+            )
             lines.append("    ],")
         else:
             lines.extend(
@@ -452,11 +454,16 @@ class AgnoConfigBuilder:
             return AgnoModelConfig("openai", model, api_key_env="OPENAI_API_KEY", base_url_env="OPENAI_BASE_URL")
 
     def build_tools_for_servers(self, servers: List[str]) -> List[AgnoToolConfig]:
-        """Build tool configurations for given servers."""
+        """Build tool configurations for given servers, ensuring no duplicates."""
+        seen_tools = set()
         tools = []
         for server in servers:
             if server in self.server_tool_mapping:
-                tools.append(self.server_tool_mapping[server])
+                tool = self.server_tool_mapping[server]
+                # Use tool_class as the unique identifier to avoid duplicates
+                if tool.tool_class not in seen_tools:
+                    tools.append(tool)
+                    seen_tools.add(tool.tool_class)
         return tools
 
     def get_tool_imports(self, tools: List[AgnoToolConfig]) -> Set[str]:

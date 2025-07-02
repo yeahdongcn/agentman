@@ -231,7 +231,3 @@ class AgnoFramework(BaseFramework):
     def get_dockerfile_config_lines(self) -> List[str]:
         """Get Agno-specific Dockerfile configuration lines."""
         return ["COPY .env ."]
-
-    def get_dockerfile_config_lines(self) -> List[str]:
-        """Get Agno-specific Dockerfile configuration lines."""
-        return ["COPY .env ."]
