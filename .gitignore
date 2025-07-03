@@ -14,3 +14,6 @@ htmlcov/
 
 # Generated files
 agent/
+
+# Binaries
+agentfile-frontend/agentfile-frontend
