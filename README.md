@@ -17,6 +17,10 @@
 
 **Agentman** is the first Docker-like tool for building, managing, and deploying AI agents using the Model Context Protocol (MCP). Transform your AI workflows with intuitive `Agentfile` syntax that lets you define complex multi-agent systems and deploy them as production-ready containers in minutes, not hours.
 
+<p align="center">
+<img alt="Repobeats analytics image" src="https://repobeats.axiom.co/api/embed/96c79f1c01f86df7bc4c864c937683b1bf854305.svg" />
+</p>
+
 ## 📚 Table of Contents
 
 - [⚡ Quick Start](#-quick-start)
