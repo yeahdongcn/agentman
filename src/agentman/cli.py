@@ -135,8 +135,15 @@ def build_cli(args):
     else:
         output_dir = context_path / "agent"
 
+    # Determine format hint
+    format_hint = None
+    if hasattr(args, 'from_yaml') and args.from_yaml:
+        format_hint = "yaml"
+    elif hasattr(args, 'format') and args.format:
+        format_hint = args.format
+
     try:
-        build_from_agentfile(str(agentfile_path), str(output_dir))
+        build_from_agentfile(str(agentfile_path), str(output_dir), format_hint)
 
         if args.build_docker:
             print("\n🐳 Building Docker image...")
@@ -157,6 +164,16 @@ def build_parser(subparsers):
     parser.add_argument("-t", "--tag", default="agent:latest", help="Name and optionally a tag for the Docker image")
     parser.add_argument(
         "--build-docker", action="store_true", help="Also build the Docker image after generating files"
+    )
+    parser.add_argument(
+        "--format",
+        choices=["dockerfile", "yaml"],
+        help="Explicitly specify the Agentfile format (auto-detected by default)"
+    )
+    parser.add_argument(
+        "--from-yaml",
+        action="store_true",
+        help="Build from YAML Agentfile format (same as --format yaml)"
     )
     parser.add_argument("path", nargs="?", default=".", help="Build context (directory or URL)")
     parser.usage = "agentman build [OPTIONS] PATH | URL | -"
@@ -184,9 +201,16 @@ def run_cli(args):
         else:
             output_dir = context_path / "agent"
 
+        # Determine format hint
+        format_hint = None
+        if hasattr(args, 'from_yaml') and args.from_yaml:
+            format_hint = "yaml"
+        elif hasattr(args, 'format') and args.format:
+            format_hint = args.format
+
         try:
             print("🔨 Building agent files...")
-            build_from_agentfile(str(agentfile_path), str(output_dir))
+            build_from_agentfile(str(agentfile_path), str(output_dir), format_hint)
 
             print("\n🐳 Building Docker image...")
             docker_cmd = ["docker", "build", "-t", args.tag, str(output_dir)]
@@ -277,6 +301,16 @@ def run_parser(subparsers):
         action="store_true",
         help="Build from Agentfile and then run " "(default is to run existing image)",
     )
+    parser.add_argument(
+        "--format",
+        choices=["dockerfile", "yaml"],
+        help="Explicitly specify the Agentfile format (auto-detected by default)"
+    )
+    parser.add_argument(
+        "--from-yaml",
+        action="store_true",
+        help="Build from YAML Agentfile format (same as --format yaml)"
+    )
     parser.add_argument("--path", default=".", help="Build context (directory or URL) " "when building from Agentfile")
     parser.add_argument("-i", "--interactive", action="store_true", help="Run container interactively")
     parser.add_argument(
@@ -300,6 +334,46 @@ def version_parser(subparsers):
     parser.set_defaults(func=print_version)
 
 
+def convert_cli(args):
+    """Convert between Agentfile formats."""
+    from agentman.converter import convert_agentfile
+    
+    try:
+        target_format = args.format if args.format else "auto"
+        convert_agentfile(args.input, args.output, target_format)
+    except (FileNotFoundError, ValueError) as e:
+        perror(f"Conversion failed: {e}")
+        sys.exit(1)
+
+
+def convert_parser(subparsers):
+    """Configure the convert subcommand parser."""
+    parser = subparsers.add_parser("convert", help="Convert between Agentfile formats")
+    parser.add_argument("input", help="Input Agentfile path")
+    parser.add_argument("output", help="Output Agentfile path")
+    parser.add_argument(
+        "--format",
+        choices=["yaml", "dockerfile"],
+        help="Target format (auto-detected by default based on output extension)"
+    )
+    parser.set_defaults(func=convert_cli)
+
+
+def validate_cli(args):
+    """Validate an Agentfile."""
+    from agentman.converter import validate_agentfile
+    
+    if not validate_agentfile(args.file):
+        sys.exit(1)
+
+
+def validate_parser(subparsers):
+    """Configure the validate subcommand parser."""
+    parser = subparsers.add_parser("validate", help="Validate an Agentfile")
+    parser.add_argument("file", help="Agentfile path to validate")
+    parser.set_defaults(func=validate_cli)
+
+
 def help_cli(args):
     """Handle the help command by raising HelpException."""
     raise HelpException()
@@ -318,6 +392,8 @@ def configure_subcommands(parser):
     subparsers.required = False
     build_parser(subparsers)
     run_parser(subparsers)
+    convert_parser(subparsers)
+    validate_parser(subparsers)
     help_parser(subparsers)
     version_parser(subparsers)
 

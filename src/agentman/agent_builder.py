@@ -233,10 +233,20 @@ class AgentBuilder:
             pass
 
 
-def build_from_agentfile(agentfile_path: str, output_dir: str = "output") -> None:
+def build_from_agentfile(agentfile_path: str, output_dir: str = "output", format_hint: str = None) -> None:
     """Build agent files from an Agentfile."""
-    parser = AgentfileParser()
-    config = parser.parse_file(agentfile_path)
+    from agentman.yaml_parser import parse_agentfile
+    
+    if format_hint == "yaml":
+        from agentman.yaml_parser import AgentfileYamlParser
+        parser = AgentfileYamlParser()
+        config = parser.parse_file(agentfile_path)
+    elif format_hint == "dockerfile":
+        parser = AgentfileParser()
+        config = parser.parse_file(agentfile_path)
+    else:
+        # Auto-detect format
+        config = parse_agentfile(agentfile_path)
 
     # Extract source directory from agentfile path
     source_dir = Path(agentfile_path).parent
