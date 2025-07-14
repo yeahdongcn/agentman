@@ -3,6 +3,11 @@
 import json
 from typing import Any, Dict
 
+try:
+    import jsonschema
+except ImportError:
+    jsonschema = None
+
 # JSON Schema for YAML Agentfile format
 AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -158,13 +163,12 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
 
 def validate_yaml_agentfile(data: Dict[str, Any]) -> bool:
     """Validate YAML Agentfile data against the schema."""
-    try:
-        import jsonschema
-
-        jsonschema.validate(data, AGENTFILE_YAML_SCHEMA)
-        return True
-    except ImportError:
+    if jsonschema is None:
         # If jsonschema is not available, skip validation
+        return True
+
+    try:
+        jsonschema.validate(data, AGENTFILE_YAML_SCHEMA)
         return True
     except jsonschema.exceptions.ValidationError:
         return False

@@ -1,21 +1,18 @@
 """Conversion utilities for Agentfile formats."""
 
+import json
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any, Dict
 
 import yaml
 
 from agentman.agentfile_parser import (
-    Agent,
     AgentfileConfig,
     AgentfileParser,
-    DockerfileInstruction,
-    MCPServer,
     SecretContext,
-    SecretType,
     SecretValue,
 )
-from agentman.yaml_parser import AgentfileYamlParser
+from agentman.yaml_parser import AgentfileYamlParser, detect_yaml_format, parse_agentfile
 
 
 def dockerfile_to_yaml(dockerfile_path: str, yaml_path: str) -> None:
@@ -218,8 +215,6 @@ def config_to_dockerfile_content(config: AgentfileConfig) -> str:
         if len(config.cmd) == 1:
             lines.append(f"CMD {config.cmd[0]}")
         else:
-            import json
-
             lines.append(f"CMD {json.dumps(config.cmd)}")
 
     return "\n".join(lines) + "\n"
@@ -247,13 +242,11 @@ def convert_agentfile(input_path: str, output_path: str, target_format: str = "a
             target_format = "dockerfile"
 
     # Determine source format
-    from agentman.yaml_parser import detect_yaml_format
-
     is_yaml_source = detect_yaml_format(str(input_path))
 
     if is_yaml_source and target_format == "yaml":
         raise ValueError("Input and output formats are both YAML")
-    elif not is_yaml_source and target_format == "dockerfile":
+    if not is_yaml_source and target_format == "dockerfile":
         raise ValueError("Input and output formats are both Dockerfile")
 
     # Convert based on source and target formats
@@ -277,8 +270,6 @@ def validate_agentfile(filepath: str) -> bool:
         True if valid, False otherwise
     """
     try:
-        from agentman.yaml_parser import parse_agentfile
-
         config = parse_agentfile(filepath)
 
         # Basic validation
@@ -300,6 +291,6 @@ def validate_agentfile(filepath: str) -> bool:
         print("✅ Agentfile is valid")
         return True
 
-    except Exception as e:
+    except (FileNotFoundError, ValueError, yaml.YAMLError) as e:
         print(f"❌ Validation failed: {e}")
         return False

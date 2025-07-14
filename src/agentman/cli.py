@@ -8,6 +8,7 @@ from pathlib import Path
 
 from agentman.agent_builder import build_from_agentfile
 from agentman.common import perror
+from agentman.converter import convert_agentfile, validate_agentfile
 from agentman.version import print_version
 
 
@@ -332,8 +333,6 @@ def version_parser(subparsers):
 
 def convert_cli(args):
     """Convert between Agentfile formats."""
-    from agentman.converter import convert_agentfile
-
     try:
         target_format = args.format if args.format else "auto"
         convert_agentfile(args.input, args.output, target_format)
@@ -357,8 +356,6 @@ def convert_parser(subparsers):
 
 def validate_cli(args):
     """Validate an Agentfile."""
-    from agentman.converter import validate_agentfile
-
     if not validate_agentfile(args.file):
         sys.exit(1)
 

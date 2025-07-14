@@ -1,20 +1,17 @@
 """YAML parser module for parsing Agentfile configurations in YAML format."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 import yaml
 
 from agentman.agentfile_parser import (
     Agent,
     AgentfileConfig,
-    Chain,
+    AgentfileParser,
     DockerfileInstruction,
     MCPServer,
-    Orchestrator,
-    Router,
     SecretContext,
-    SecretType,
     SecretValue,
 )
 
@@ -252,11 +249,9 @@ def detect_yaml_format(filepath: str) -> bool:
 
 def parse_agentfile(filepath: str) -> AgentfileConfig:
     """Parse an Agentfile in either YAML or Dockerfile format."""
-    from agentman.agentfile_parser import AgentfileParser
-
     if detect_yaml_format(filepath):
         parser = AgentfileYamlParser()
         return parser.parse_file(filepath)
-    else:
-        parser = AgentfileParser()
-        return parser.parse_file(filepath)
+
+    parser = AgentfileParser()
+    return parser.parse_file(filepath)

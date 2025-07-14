@@ -1,13 +1,13 @@
 """Agent builder module for generating files from Agentfile configuration."""
 
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
-import yaml
-
 from agentman.agentfile_parser import AgentfileConfig, AgentfileParser
 from agentman.frameworks import AgnoFramework, FastAgentFramework
+from agentman.yaml_parser import AgentfileYamlParser, parse_agentfile
 
 
 class AgentBuilder:
@@ -40,8 +40,8 @@ class AgentBuilder:
         """Get the appropriate framework handler based on configuration."""
         if self.config.framework == "agno":
             return AgnoFramework(self.config, self._output_dir, self.source_dir)
-        else:
-            return FastAgentFramework(self.config, self._output_dir, self.source_dir)
+
+        return FastAgentFramework(self.config, self._output_dir, self.source_dir)
 
     def build_all(self):
         """Build all generated files."""
@@ -61,8 +61,6 @@ class AgentBuilder:
     def _copy_prompt_file(self):
         """Copy prompt.txt to output directory if it exists."""
         if self.has_prompt_file:
-            import shutil
-
             dest_path = self.output_dir / "prompt.txt"
             shutil.copy2(self.prompt_file_path, dest_path)
 
@@ -230,16 +228,11 @@ class AgentBuilder:
         except (subprocess.CalledProcessError, FileNotFoundError) as e:
             # If fast-agent is not available or validation fails, just warn but don't fail
             print(f"⚠️  Validation skipped: {e}")
-            pass
 
 
 def build_from_agentfile(agentfile_path: str, output_dir: str = "output", format_hint: str = None) -> None:
     """Build agent files from an Agentfile."""
-    from agentman.yaml_parser import parse_agentfile
-
     if format_hint == "yaml":
-        from agentman.yaml_parser import AgentfileYamlParser
-
         parser = AgentfileYamlParser()
         config = parser.parse_file(agentfile_path)
     elif format_hint == "dockerfile":

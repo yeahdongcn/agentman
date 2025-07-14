@@ -67,7 +67,7 @@ class AgnoFramework(BaseFramework):
         tool_imports = []
         if has_servers:
             # Map server types to appropriate tools
-            for server_name, server in self.config.servers.items():
+            for server_name, _ in self.config.servers.items():
                 if server_name in ["web_search", "search", "browser"]:
                     tool_imports.append("from agno.tools.duckduckgo import DuckDuckGoTools")
                 elif server_name in ["finance", "yfinance", "stock"]:
@@ -240,7 +240,7 @@ class AgnoFramework(BaseFramework):
             return f'model=Claude(id="{model}"),'
 
         # OpenAI models
-        elif "openai" in model_lower or "gpt" in model_lower:
+        if "openai" in model_lower or "gpt" in model_lower:
             model_code = 'model=OpenAILike(\n'
             model_code += f'        id="{model}",\n'
             model_code += '        api_key=os.getenv("OPENAI_API_KEY"),\n'
@@ -249,8 +249,8 @@ class AgnoFramework(BaseFramework):
             return model_code
 
         # Custom OpenAI-like models (with provider prefix)
-        elif "/" in model:
-            provider, model_name = model.split("/", 1)
+        if "/" in model:
+            provider, _ = model.split("/", 1)
             provider_upper = provider.upper()
 
             # Generate OpenAILike model with custom configuration
@@ -262,24 +262,23 @@ class AgnoFramework(BaseFramework):
             return model_code
 
         # Default to OpenAILike for unrecognized patterns
-        else:
-            # Check if we have OpenAI-like environment variables configured
-            has_openai_config = any(
-                (isinstance(secret, str) and secret in ["OPENAI_API_KEY", "OPENAI_BASE_URL"])
-                or (hasattr(secret, 'name') and secret.name in ["OPENAI_API_KEY", "OPENAI_BASE_URL"])
-                for secret in self.config.secrets
-            )
+        # Check if we have OpenAI-like environment variables configured
+        has_openai_config = any(
+            (isinstance(secret, str) and secret in ["OPENAI_API_KEY", "OPENAI_BASE_URL"])
+            or (hasattr(secret, 'name') and secret.name in ["OPENAI_API_KEY", "OPENAI_BASE_URL"])
+            for secret in self.config.secrets
+        )
 
-            if has_openai_config:
-                # Use OpenAI environment variables for custom models
-                model_code = 'model=OpenAILike(\n'
-                model_code += f'        id="{model}",\n'
-                model_code += '        api_key=os.getenv("OPENAI_API_KEY"),\n'
-                model_code += '        base_url=os.getenv("OPENAI_BASE_URL"),\n'
-                model_code += '    ),'
-                return model_code
-            else:
-                return f'model=OpenAILike(id="{model}"),'
+        if has_openai_config:
+            # Use OpenAI environment variables for custom models
+            model_code = 'model=OpenAILike(\n'
+            model_code += f'        id="{model}",\n'
+            model_code += '        api_key=os.getenv("OPENAI_API_KEY"),\n'
+            model_code += '        base_url=os.getenv("OPENAI_BASE_URL"),\n'
+            model_code += '    ),'
+            return model_code
+
+        return f'model=OpenAILike(id="{model}"),'
 
     def _generate_main_function(self, has_multiple_agents: bool, agent_vars: list) -> List[str]:
         """Generate the main function and execution logic."""
@@ -342,7 +341,7 @@ class AgnoFramework(BaseFramework):
 
         elif agent_vars:
             # Single agent scenario with enhanced features
-            primary_agent_var, primary_agent = agent_vars[0]
+            primary_agent_var, _ = agent_vars[0]
             if self.has_prompt_file:
                 lines.extend(
                     [
