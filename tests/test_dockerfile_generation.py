@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Test script to verify EXPOSE and CMD instructions are properly handled in Dockerfile generation."""
 
-import tempfile
 import os
+import tempfile
 from pathlib import Path
 
-from agentman.agentfile_parser import AgentfileParser
 from agentman.agent_builder import AgentBuilder
+from agentman.agentfile_parser import AgentfileParser
 
 
 def test_dockerfile_generation_with_expose_and_cmd():

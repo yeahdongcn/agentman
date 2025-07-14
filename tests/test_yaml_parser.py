@@ -9,22 +9,23 @@ Tests cover all aspects of the AgentfileYamlParser including:
 - All configuration sections (base, mcp_servers, agent, command, secrets, etc.)
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
 
+import pytest
+
+from agentman.agentfile_parser import (
+    Agent,
+    AgentfileConfig,
+    MCPServer,
+    SecretContext,
+    SecretValue,
+)
 from agentman.yaml_parser import (
     AgentfileYamlParser,
     detect_yaml_format,
     parse_agentfile,
-)
-from agentman.agentfile_parser import (
-    AgentfileConfig,
-    MCPServer,
-    Agent,
-    SecretValue,
-    SecretContext,
 )
 
 
@@ -96,7 +97,7 @@ agent:
         assert len(config.servers) == 2
         assert "filesystem" in config.servers
         assert "web_search" in config.servers
-        
+
         fs_server = config.servers["filesystem"]
         assert fs_server.name == "filesystem"
         assert fs_server.command == "uv"
@@ -131,7 +132,7 @@ agent:
 
         assert len(config.agents) == 1
         assert "gmail_assistant" in config.agents
-        
+
         agent = config.agents["gmail_assistant"]
         assert agent.name == "gmail_assistant"
         assert "You are a helpful assistant that can manage Gmail." in agent.instruction
@@ -159,24 +160,21 @@ secrets:
         config = self.parser.parse_content(content)
 
         assert len(config.secrets) == 3
-        
+
         # Simple secret reference
         assert config.secrets[0] == "SIMPLE_SECRET"
-        
+
         # Inline secret value
         inline_secret = config.secrets[1]
         assert isinstance(inline_secret, SecretValue)
         assert inline_secret.name == "INLINE_SECRET"
         assert inline_secret.value == "secret-value-123"
-        
+
         # Secret context
         context_secret = config.secrets[2]
         assert isinstance(context_secret, SecretContext)
         assert context_secret.name == "OPENAI_CONFIG"
-        assert context_secret.values == {
-            "API_KEY": "sk-test123",
-            "BASE_URL": "https://api.openai.com/v1"
-        }
+        assert context_secret.values == {"API_KEY": "sk-test123", "BASE_URL": "https://api.openai.com/v1"}
 
     def test_parse_content_with_dockerfile_instructions(self):
         """Test parsing YAML with additional dockerfile instructions."""
@@ -195,15 +193,15 @@ dockerfile:
         config = self.parser.parse_content(content)
 
         assert len(config.dockerfile_instructions) == 3
-        
+
         run_instruction = config.dockerfile_instructions[0]
         assert run_instruction.instruction == "RUN"
         assert run_instruction.args == ["apt-get", "update"]
-        
+
         env_instruction = config.dockerfile_instructions[1]
         assert env_instruction.instruction == "ENV"
         assert env_instruction.args == ["PYTHONPATH=/app"]
-        
+
         copy_instruction = config.dockerfile_instructions[2]
         assert copy_instruction.instruction == "COPY"
         assert copy_instruction.args == [".", "/app"]

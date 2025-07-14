@@ -168,12 +168,10 @@ def build_parser(subparsers):
     parser.add_argument(
         "--format",
         choices=["dockerfile", "yaml"],
-        help="Explicitly specify the Agentfile format (auto-detected by default)"
+        help="Explicitly specify the Agentfile format (auto-detected by default)",
     )
     parser.add_argument(
-        "--from-yaml",
-        action="store_true",
-        help="Build from YAML Agentfile format (same as --format yaml)"
+        "--from-yaml", action="store_true", help="Build from YAML Agentfile format (same as --format yaml)"
     )
     parser.add_argument("path", nargs="?", default=".", help="Build context (directory or URL)")
     parser.usage = "agentman build [OPTIONS] PATH | URL | -"
@@ -304,12 +302,10 @@ def run_parser(subparsers):
     parser.add_argument(
         "--format",
         choices=["dockerfile", "yaml"],
-        help="Explicitly specify the Agentfile format (auto-detected by default)"
+        help="Explicitly specify the Agentfile format (auto-detected by default)",
     )
     parser.add_argument(
-        "--from-yaml",
-        action="store_true",
-        help="Build from YAML Agentfile format (same as --format yaml)"
+        "--from-yaml", action="store_true", help="Build from YAML Agentfile format (same as --format yaml)"
     )
     parser.add_argument("--path", default=".", help="Build context (directory or URL) " "when building from Agentfile")
     parser.add_argument("-i", "--interactive", action="store_true", help="Run container interactively")
@@ -337,7 +333,7 @@ def version_parser(subparsers):
 def convert_cli(args):
     """Convert between Agentfile formats."""
     from agentman.converter import convert_agentfile
-    
+
     try:
         target_format = args.format if args.format else "auto"
         convert_agentfile(args.input, args.output, target_format)
@@ -354,7 +350,7 @@ def convert_parser(subparsers):
     parser.add_argument(
         "--format",
         choices=["yaml", "dockerfile"],
-        help="Target format (auto-detected by default based on output extension)"
+        help="Target format (auto-detected by default based on output extension)",
     )
     parser.set_defaults(func=convert_cli)
 
@@ -362,7 +358,7 @@ def convert_parser(subparsers):
 def validate_cli(args):
     """Validate an Agentfile."""
     from agentman.converter import validate_agentfile
-    
+
     if not validate_agentfile(args.file):
         sys.exit(1)
 

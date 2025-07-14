@@ -1,7 +1,7 @@
 """JSON Schema for validating YAML Agentfile configurations."""
 
 import json
-from typing import Dict, Any
+from typing import Any, Dict
 
 # JSON Schema for YAML Agentfile format
 AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
@@ -9,15 +9,11 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
     "type": "object",
     "required": ["apiVersion", "kind"],
     "properties": {
-        "apiVersion": {
-            "type": "string",
-            "const": "v1",
-            "description": "API version, currently only 'v1' is supported"
-        },
+        "apiVersion": {"type": "string", "const": "v1", "description": "API version, currently only 'v1' is supported"},
         "kind": {
             "type": "string",
             "const": "Agent",
-            "description": "Resource kind, currently only 'Agent' is supported"
+            "description": "Resource kind, currently only 'Agent' is supported",
         },
         "base": {
             "type": "object",
@@ -25,21 +21,21 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
                 "image": {
                     "type": "string",
                     "description": "Base Docker image",
-                    "default": "ghcr.io/o3-cloud/pai/base:latest"
+                    "default": "ghcr.io/o3-cloud/pai/base:latest",
                 },
                 "model": {
                     "type": "string",
                     "description": "Default model to use for agents",
-                    "examples": ["gpt-4", "anthropic/claude-3-sonnet-20241022"]
+                    "examples": ["gpt-4", "anthropic/claude-3-sonnet-20241022"],
                 },
                 "framework": {
                     "type": "string",
                     "enum": ["fast-agent", "agno"],
                     "description": "Framework to use for agent development",
-                    "default": "fast-agent"
-                }
+                    "default": "fast-agent",
+                },
             },
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "mcp_servers": {
             "type": "array",
@@ -48,136 +44,95 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
                 "type": "object",
                 "required": ["name"],
                 "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "Unique name for the MCP server"
-                    },
-                    "command": {
-                        "type": "string",
-                        "description": "Command to run the MCP server"
-                    },
+                    "name": {"type": "string", "description": "Unique name for the MCP server"},
+                    "command": {"type": "string", "description": "Command to run the MCP server"},
                     "args": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Arguments to pass to the command"
+                        "description": "Arguments to pass to the command",
                     },
                     "transport": {
                         "type": "string",
                         "enum": ["stdio", "sse", "http"],
                         "default": "stdio",
-                        "description": "Transport method for the MCP server"
+                        "description": "Transport method for the MCP server",
                     },
-                    "url": {
-                        "type": "string",
-                        "description": "URL for HTTP/SSE transport"
-                    },
+                    "url": {"type": "string", "description": "URL for HTTP/SSE transport"},
                     "env": {
                         "type": "object",
-                        "patternProperties": {
-                            "^[A-Z_][A-Z0-9_]*$": {"type": "string"}
-                        },
+                        "patternProperties": {"^[A-Z_][A-Z0-9_]*$": {"type": "string"}},
                         "additionalProperties": False,
-                        "description": "Environment variables for the MCP server"
-                    }
+                        "description": "Environment variables for the MCP server",
+                    },
                 },
-                "additionalProperties": False
-            }
+                "additionalProperties": False,
+            },
         },
         "agent": {
             "type": "object",
             "required": ["name"],
             "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "Name of the agent"
-                },
+                "name": {"type": "string", "description": "Name of the agent"},
                 "instruction": {
                     "type": "string",
                     "description": "Instructions for the agent",
-                    "default": "You are a helpful agent."
+                    "default": "You are a helpful agent.",
                 },
                 "servers": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "List of MCP server names this agent can use"
+                    "description": "List of MCP server names this agent can use",
                 },
-                "model": {
-                    "type": "string",
-                    "description": "Model to use for this agent (overrides base model)"
-                },
+                "model": {"type": "string", "description": "Model to use for this agent (overrides base model)"},
                 "use_history": {
                     "type": "boolean",
                     "default": True,
-                    "description": "Whether the agent should use conversation history"
+                    "description": "Whether the agent should use conversation history",
                 },
                 "human_input": {
                     "type": "boolean",
                     "default": False,
-                    "description": "Whether the agent should prompt for human input"
+                    "description": "Whether the agent should prompt for human input",
                 },
-                "default": {
-                    "type": "boolean",
-                    "default": False,
-                    "description": "Whether this is the default agent"
-                }
+                "default": {"type": "boolean", "default": False, "description": "Whether this is the default agent"},
             },
-            "additionalProperties": False
+            "additionalProperties": False,
         },
         "command": {
             "type": "array",
             "items": {"type": "string"},
             "description": "Default command to run in the container",
-            "default": ["python", "agent.py"]
+            "default": ["python", "agent.py"],
         },
         "secrets": {
             "type": "array",
             "description": "List of secrets the agent needs",
             "items": {
                 "oneOf": [
-                    {
-                        "type": "string",
-                        "description": "Simple secret reference"
-                    },
+                    {"type": "string", "description": "Simple secret reference"},
                     {
                         "type": "object",
                         "required": ["name"],
                         "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "Name of the secret"
-                            },
-                            "value": {
-                                "type": "string",
-                                "description": "Inline secret value"
-                            },
+                            "name": {"type": "string", "description": "Name of the secret"},
+                            "value": {"type": "string", "description": "Inline secret value"},
                             "values": {
                                 "type": "object",
-                                "patternProperties": {
-                                    "^[A-Z_][A-Z0-9_]*$": {"type": "string"}
-                                },
+                                "patternProperties": {"^[A-Z_][A-Z0-9_]*$": {"type": "string"}},
                                 "additionalProperties": False,
-                                "description": "Multiple key-value pairs for secret context"
-                            }
+                                "description": "Multiple key-value pairs for secret context",
+                            },
                         },
                         "additionalProperties": False,
-                        "not": {
-                            "allOf": [
-                                {"required": ["value"]},
-                                {"required": ["values"]}
-                            ]
-                        }
-                    }
+                        "not": {"allOf": [{"required": ["value"]}, {"required": ["values"]}]},
+                    },
                 ]
-            }
+            },
         },
         "expose": {
             "type": "array",
-            "items": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 65535
-            },
-            "description": "List of ports to expose"
+            "items": {"type": "integer", "minimum": 1, "maximum": 65535},
+            "description": "List of ports to expose",
         },
         "dockerfile": {
             "type": "array",
@@ -186,21 +141,18 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
                 "type": "object",
                 "required": ["instruction", "args"],
                 "properties": {
-                    "instruction": {
-                        "type": "string",
-                        "description": "Dockerfile instruction (e.g., RUN, COPY, ENV)"
-                    },
+                    "instruction": {"type": "string", "description": "Dockerfile instruction (e.g., RUN, COPY, ENV)"},
                     "args": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Arguments for the instruction"
-                    }
+                        "description": "Arguments for the instruction",
+                    },
                 },
-                "additionalProperties": False
-            }
-        }
+                "additionalProperties": False,
+            },
+        },
     },
-    "additionalProperties": False
+    "additionalProperties": False,
 }
 
 
@@ -208,6 +160,7 @@ def validate_yaml_agentfile(data: Dict[str, Any]) -> bool:
     """Validate YAML Agentfile data against the schema."""
     try:
         import jsonschema
+
         jsonschema.validate(data, AGENTFILE_YAML_SCHEMA)
         return True
     except ImportError:

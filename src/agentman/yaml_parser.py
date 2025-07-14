@@ -1,20 +1,21 @@
 """YAML parser module for parsing Agentfile configurations in YAML format."""
 
-import yaml
-from typing import Any, Dict, List, Optional, Union
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
+
+import yaml
 
 from agentman.agentfile_parser import (
-    AgentfileConfig,
-    MCPServer,
     Agent,
-    Router,
+    AgentfileConfig,
     Chain,
+    DockerfileInstruction,
+    MCPServer,
     Orchestrator,
-    SecretValue,
+    Router,
     SecretContext,
     SecretType,
-    DockerfileInstruction,
+    SecretValue,
 )
 
 
@@ -43,31 +44,31 @@ class AgentfileYamlParser:
         # Validate API version and kind
         api_version = data.get('apiVersion', 'v1')
         kind = data.get('kind', 'Agent')
-        
+
         if api_version != 'v1':
             raise ValueError(f"Unsupported API version: {api_version}. Only 'v1' is supported.")
-        
+
         if kind != 'Agent':
             raise ValueError(f"Unsupported kind: {kind}. Only 'Agent' is supported.")
 
         # Parse base configuration
         self._parse_base(data.get('base', {}))
-        
+
         # Parse MCP servers
         self._parse_mcp_servers(data.get('mcp_servers', []))
-        
+
         # Parse agent configuration
         self._parse_agent(data.get('agent', {}))
-        
+
         # Parse command
         self._parse_command(data.get('command', []))
-        
+
         # Parse secrets if they exist
         self._parse_secrets(data.get('secrets', []))
-        
+
         # Parse expose ports if they exist
         self._parse_expose_ports(data.get('expose', []))
-        
+
         # Parse additional dockerfile instructions if they exist
         self._parse_dockerfile_instructions(data.get('dockerfile', []))
 
@@ -77,10 +78,10 @@ class AgentfileYamlParser:
         """Parse base configuration."""
         if 'image' in base_config:
             self.config.base_image = base_config['image']
-        
+
         if 'model' in base_config:
             self.config.default_model = base_config['model']
-        
+
         if 'framework' in base_config:
             framework = base_config['framework'].lower()
             if framework not in ['fast-agent', 'agno']:
@@ -92,71 +93,71 @@ class AgentfileYamlParser:
         for server_config in servers_config:
             if 'name' not in server_config:
                 raise ValueError("MCP server must have a 'name' field")
-            
+
             name = server_config['name']
             server = MCPServer(name=name)
-            
+
             if 'command' in server_config:
                 server.command = server_config['command']
-            
+
             if 'args' in server_config:
                 args = server_config['args']
                 if isinstance(args, list):
                     server.args = args
                 else:
                     raise ValueError("MCP server 'args' must be a list")
-            
+
             if 'transport' in server_config:
                 transport = server_config['transport']
                 if transport not in ['stdio', 'sse', 'http']:
                     raise ValueError(f"Invalid transport type: {transport}")
                 server.transport = transport
-            
+
             if 'url' in server_config:
                 server.url = server_config['url']
-            
+
             if 'env' in server_config:
                 env = server_config['env']
                 if isinstance(env, dict):
                     server.env = env
                 else:
                     raise ValueError("MCP server 'env' must be a dictionary")
-            
+
             self.config.servers[name] = server
 
     def _parse_agent(self, agent_config: Dict[str, Any]):
         """Parse agent configuration."""
         if not agent_config:
             return
-        
+
         if 'name' not in agent_config:
             raise ValueError("Agent must have a 'name' field")
-        
+
         name = agent_config['name']
         agent = Agent(name=name)
-        
+
         if 'instruction' in agent_config:
             agent.instruction = agent_config['instruction']
-        
+
         if 'servers' in agent_config:
             servers = agent_config['servers']
             if isinstance(servers, list):
                 agent.servers = servers
             else:
                 raise ValueError("Agent 'servers' must be a list")
-        
+
         if 'model' in agent_config:
             agent.model = agent_config['model']
-        
+
         if 'use_history' in agent_config:
             agent.use_history = bool(agent_config['use_history'])
-        
+
         if 'human_input' in agent_config:
             agent.human_input = bool(agent_config['human_input'])
-        
+
         if 'default' in agent_config:
             agent.default = bool(agent_config['default'])
-        
+
         self.config.agents[name] = agent
 
     def _parse_command(self, command_config: List[str]):
@@ -176,9 +177,9 @@ class AgentfileYamlParser:
             elif isinstance(secret_config, dict):
                 if 'name' not in secret_config:
                     raise ValueError("Secret must have a 'name' field")
-                
+
                 name = secret_config['name']
-                
+
                 if 'value' in secret_config:
                     # Inline secret value
                     secret = SecretValue(name=name, value=secret_config['value'])
@@ -211,10 +212,10 @@ class AgentfileYamlParser:
         for instruction_config in dockerfile_config:
             if 'instruction' not in instruction_config or 'args' not in instruction_config:
                 raise ValueError("Dockerfile instruction must have 'instruction' and 'args' fields")
-            
+
             instruction = instruction_config['instruction'].upper()
             args = instruction_config['args']
-            
+
             if isinstance(args, list):
                 dockerfile_instruction = DockerfileInstruction(instruction=instruction, args=args)
                 self.config.dockerfile_instructions.append(dockerfile_instruction)
@@ -225,25 +226,25 @@ class AgentfileYamlParser:
 def detect_yaml_format(filepath: str) -> bool:
     """Detect if a file is in YAML format based on extension or content."""
     path = Path(filepath)
-    
+
     # Check file extension
     if path.suffix.lower() in ['.yml', '.yaml']:
         return True
-    
+
     # Check content for YAML structure
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read().strip()
             if not content:
                 return False
-            
+
             # Try to parse as YAML
             data = yaml.safe_load(content)
-            
+
             # Check if it has YAML Agentfile structure
             if isinstance(data, dict) and 'apiVersion' in data and 'kind' in data:
                 return True
-            
+
             return False
     except (yaml.YAMLError, IOError, UnicodeDecodeError):
         return False
@@ -252,7 +253,7 @@ def detect_yaml_format(filepath: str) -> bool:
 def parse_agentfile(filepath: str) -> AgentfileConfig:
     """Parse an Agentfile in either YAML or Dockerfile format."""
     from agentman.agentfile_parser import AgentfileParser
-    
+
     if detect_yaml_format(filepath):
         parser = AgentfileYamlParser()
         return parser.parse_file(filepath)

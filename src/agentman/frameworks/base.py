@@ -1,8 +1,8 @@
 """Base framework interface for AgentMan."""
 
 from abc import ABC, abstractmethod
-from typing import List
 from pathlib import Path
+from typing import List
 
 from agentman.agentfile_parser import AgentfileConfig
 
