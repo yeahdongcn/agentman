@@ -377,7 +377,7 @@ class TestAgentBuilder:
                 file_path = Path(temp_dir) / filename
                 assert file_path.exists(), f"File {filename} was not created"
 
-    @patch('agentman.yaml_parser.parse_agentfile')
+    @patch('agentman.agent_builder.parse_agentfile')
     def test_build_from_agentfile(self, mock_parse_agentfile):
         """Test building from Agentfile function."""
         # Mock the parser function and its behavior
@@ -406,7 +406,7 @@ class TestAgentBuilder:
 
     def test_build_from_agentfile_default_output(self):
         """Test building from Agentfile with default output directory."""
-        with patch('agentman.yaml_parser.parse_agentfile') as mock_parse_agentfile:
+        with patch('agentman.agent_builder.parse_agentfile') as mock_parse_agentfile:
             mock_parse_agentfile.return_value = self.config
 
             # Mock the AgentBuilder.build_all method to avoid actual file creation
