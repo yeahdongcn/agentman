@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Agent
+base:
+  model: qwen-plus
+  framework: agno
+mcp_servers:
+- name: web_search
+- name: finance
+agents:
+- name: web_researcher
+  instruction: You are a web research specialist. Search for information, analyze
+    sources, and provide comprehensive research findings.
+  servers:
+  - web_search
+- name: data_analyst
+  instruction: You are a data analysis expert. Analyze financial data, create reports,
+    and provide investment insights.
+  servers:
+  - finance
+secrets:
+- name: OPENAI_API_KEY
+  value: sk-...
+- name: OPENAI_BASE_URL
+  value: https://dashscope.aliyuncs.com/compatible-mode/v1

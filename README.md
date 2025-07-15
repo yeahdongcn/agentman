@@ -101,6 +101,8 @@ mkdir url-to-social && cd url-to-social
 ```
 
 **2. Create an `Agentfile`:**
+
+*Option A: Dockerfile format (traditional)*
 ```dockerfile
 FROM yeahdongcn/agentman-base:latest
 MODEL anthropic/claude-3-sonnet
@@ -124,6 +126,33 @@ CHAIN content_pipeline
 SEQUENCE url_analyzer social_writer
 
 CMD ["python", "agent.py"]
+```
+
+*Option B: YAML format (recommended for complex workflows)*
+```yaml
+# Agentfile.yml
+apiVersion: v1
+kind: Agent
+base:
+  model: anthropic/claude-3-sonnet
+mcp_servers:
+- name: fetch
+  command: uvx
+  args:
+  - mcp-server-fetch
+  transport: stdio
+agents:
+- name: url_analyzer
+  instruction: Given a URL, provide a comprehensive summary of the content
+  servers:
+  - fetch
+- name: social_writer
+  instruction: Transform any text into a compelling 280-character social media post
+chains:
+- name: content_pipeline
+  sequence:
+  - url_analyzer
+  - social_writer
 ```
 
 **3. Build and run:**
@@ -267,6 +296,47 @@ EXPOSE 8080                            # Expose ports
 CMD ["python", "agent.py"]             # Container startup command
 ```
 
+### 📄 File Format Support
+
+Agentman supports two file formats for defining your agent configurations:
+
+#### **Dockerfile-style Agentfile (Default)**
+The traditional Docker-like syntax using an `Agentfile` without extension:
+
+```dockerfile
+FROM yeahdongcn/agentman-base:latest
+MODEL anthropic/claude-3-sonnet
+FRAMEWORK fast-agent
+
+AGENT assistant
+INSTRUCTION You are a helpful AI assistant
+```
+
+#### **YAML Agentfile**
+Modern declarative YAML format using `Agentfile.yml` or `Agentfile.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Agent
+base:
+  model: anthropic/claude-3-sonnet
+  framework: fast-agent
+agents:
+- name: assistant
+  instruction: You are a helpful AI assistant
+```
+
+**Key advantages of YAML format:**
+- **🎯 Better structure** for complex multi-agent configurations
+- **📝 Native support** for lists, nested objects, and comments
+- **🔍 IDE support** with syntax highlighting and validation
+- **📊 Clear hierarchy** for routers, chains, and orchestrators
+
+**Usage:**
+- **Build**: `agentman build .` (auto-detects format)
+- **Run**: `agentman run --from-agentfile .` (works with both formats)
+- **Convert**: Agentman can automatically convert between formats
+
 ### Framework Configuration
 
 Choose between supported AI agent frameworks:
@@ -290,6 +360,7 @@ FRAMEWORK agno        # Alternative: Agno framework
 
 Define external MCP servers that provide tools and capabilities:
 
+**Dockerfile format:**
 ```dockerfile
 MCP_SERVER filesystem
 COMMAND uvx
@@ -298,10 +369,23 @@ TRANSPORT stdio
 ENV PATH_PREFIX /app/data
 ```
 
+**YAML format:**
+```yaml
+mcp_servers:
+- name: filesystem
+  command: uvx
+  args:
+  - mcp-server-filesystem
+  transport: stdio
+  env:
+    PATH_PREFIX: /app/data
+```
+
 ### Agent Definitions
 
 Create individual agents with specific roles and capabilities:
 
+**Dockerfile format:**
 ```dockerfile
 AGENT assistant
 INSTRUCTION You are a helpful AI assistant specialized in data analysis
@@ -311,23 +395,64 @@ USE_HISTORY true
 HUMAN_INPUT false
 ```
 
+**YAML format:**
+```yaml
+agents:
+- name: assistant
+  instruction: You are a helpful AI assistant specialized in data analysis
+  servers:
+  - filesystem
+  - brave
+  model: anthropic/claude-3-sonnet
+  use_history: true
+  human_input: false
+```
+
 ### Workflow Orchestration
 
 **Chains** (Sequential processing):
+
+*Dockerfile format:*
 ```dockerfile
 CHAIN data_pipeline
 SEQUENCE data_loader data_processor data_exporter
 CUMULATIVE true
 ```
 
+*YAML format:*
+```yaml
+chains:
+- name: data_pipeline
+  sequence:
+  - data_loader
+  - data_processor
+  - data_exporter
+  cumulative: true
+```
+
 **Routers** (Conditional routing):
+
+*Dockerfile format:*
 ```dockerfile
 ROUTER query_router
 AGENTS sql_agent api_agent file_agent
 INSTRUCTION Route queries based on data source type
 ```
 
+*YAML format:*
+```yaml
+routers:
+- name: query_router
+  agents:
+  - sql_agent
+  - api_agent
+  - file_agent
+  instruction: Route queries based on data source type
+```
+
 **Orchestrators** (Complex coordination):
+
+*Dockerfile format:*
 ```dockerfile
 ORCHESTRATOR project_manager
 AGENTS developer tester deployer
@@ -336,10 +461,24 @@ PLAN_ITERATIONS 5
 HUMAN_INPUT true
 ```
 
+*YAML format:*
+```yaml
+orchestrators:
+- name: project_manager
+  agents:
+  - developer
+  - tester
+  - deployer
+  plan_type: iterative
+  plan_iterations: 5
+  human_input: true
+```
+
 ### Secrets Management
 
 Secure handling of API keys and sensitive configuration:
 
+**Dockerfile format:**
 ```dockerfile
 # Environment variable references
 SECRET OPENAI_API_KEY
@@ -353,6 +492,23 @@ SECRET CUSTOM_API
 API_KEY your_key_here
 BASE_URL https://api.example.com
 TIMEOUT 30
+```
+
+**YAML format:**
+```yaml
+secrets:
+- name: OPENAI_API_KEY
+  values: {}  # Environment variable reference
+- name: ANTHROPIC_API_KEY
+  values: {}
+- name: DATABASE_URL
+  values:
+    DATABASE_URL: postgresql://localhost:5432/mydb
+- name: CUSTOM_API
+  values:
+    API_KEY: your_key_here
+    BASE_URL: https://api.example.com
+    TIMEOUT: 30
 ```
 
 ### Default Prompt Support
@@ -426,6 +582,8 @@ This ensures your agent automatically executes the default prompt when the conta
 
 ## 🎯 Example Projects
 
+All example projects in the `/examples` directory include both Dockerfile-style `Agentfile` and YAML format `Agentfile.yml` for comparison and learning. You can use either format to build and run the examples.
+
 ### 1. GitHub Profile Manager (with Default Prompt)
 
 A comprehensive GitHub profile management agent that automatically loads a default prompt.
@@ -433,12 +591,25 @@ A comprehensive GitHub profile management agent that automatically loads a defau
 **Project Structure:**
 ```
 github-profile-manager/
-├── Agentfile
+├── Agentfile           # Dockerfile format
+├── Agentfile.yml       # YAML format (same functionality)
 ├── prompt.txt          # Default prompt automatically loaded
 └── agent/              # Generated files
     ├── agent.py
     ├── prompt.txt      # Copied during build
     └── ...
+```
+
+**Build with either format:**
+```bash
+# Using Dockerfile format
+agentman build -f Agentfile .
+
+# Using YAML format  
+agentman build -f Agentfile.yml .
+
+# Auto-detection (picks first available)
+agentman build .
 ```
 
 **prompt.txt:**

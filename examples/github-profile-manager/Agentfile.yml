@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: Agent
+base:
+  model: qwen-plus
+mcp_servers:
+- name: fetch
+  command: uvx
+  args:
+  - mcp-server-fetch
+- name: github-mcp-server
+  command: /server/github-mcp-server
+  args:
+  - stdio
+  env:
+    GITHUB_PERSONAL_ACCESS_TOKEN: ghp_...
+agents:
+- name: github-profile-fetcher
+  instruction: Given a GitHub username, fetch the user's profile information including
+    their name, bio, location, and public repositories count as basic information.             Then
+    fetch the user's latest activities including their latest commits, issues, and
+    pull requests. Finally, aggregate all the fetched information into a structured
+    format and return it.
+  servers:
+  - fetch
+  - github-mcp-server
+- name: github-profile-markdown-generator
+  instruction: "Given a GitHub profile information, generate a Markdown formatted\
+    \ profile summary which like the following example: ```markdown ### Hi, I'm Akshay\
+    \ \U0001F44B             I build foundational Python tools for developers who\
+    \ work with data.             - \U0001F4BB I'm currently working on [marimo](https://github.com/marimo-team/marimo),\
+    \ a new kind of reactive Python notebook. - \U0001F52D I developed [PyMDE](https://github.com/cvxgrp/pymde),\
+    \ a PyTorch library for computing custom embeddings of large datasets. - \U0001F5A9\
+    \ I'm a maintainer and developer of [CVXPY](https://github.com/cvxpy/cvxpy), a\
+    \ widely-used library for mathematical optimization.             - \U0001F4DA\
+    \ I love writing. I write [blog posts](https://www.debugmind.com/2020/01/04/paths-to-the-future-a-year-at-google-brain/),\
+    \ research [papers](https://www.akshayagrawal.com/), and books, including a [book\
+    \ on embeddings](https://web.stanford.edu/~boyd/papers/min_dist_emb.html).   \
+    \          - \U0001F393 I graduated from Stanford University with a PhD, advised\
+    \ by [Stephen Boyd](https://web.stanford.edu/~boyd/index.html). All my papers\
+    \ are accompanied by open-source software.             I'm always open to conversations.\
+    \ Reach me via [email](mailto:akshay@marimo.io). ``` The generated Markdown should\
+    \ be well-formatted and ready to be used in a GitHub profile README."
+- name: github-profile-updater
+  instruction: Given the generated Markdown profile summary, update the GitHub profile
+    README with the new content. Ensure that the README is updated in a way that it
+    reflects the latest information about the user.
+  servers:
+  - github-mcp-server
+orchestrators:
+- name: github-profile-manager
+  agents:
+  - github-profile-fetcher
+  - github-profile-markdown-generator
+  - github-profile-updater
+  plan_iterations: 30
+  default: true
+secrets:
+- name: ALIYUN_API_KEY
+  value: sk-...
+dockerfile:
+- instruction: COPY
+  args:
+  - --from=ghcr.io/github/github-mcp-server
+  - /server/github-mcp-server
+  - /server/github-mcp-server
+- instruction: COPY
+  args:
+  - --from=ghcr.io/github/github-mcp-server
+  - /etc/ssl/certs/ca-certificates.crt
+  - /etc/ssl/certs/ca-certificates.crt
+- instruction: ENV
+  args:
+  - SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+- instruction: RUN
+  args:
+  - mkdir
+  - -p
+  - /app
+- instruction: WORKDIR
+  args:
+  - /app

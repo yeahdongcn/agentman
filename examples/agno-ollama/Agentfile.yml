@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Agent
+base:
+  model: ollama/llama3.2
+  framework: agno
+mcp_servers:
+- name: web_search
+  command: uvx
+  args:
+  - mcp-server-duckduckgo
+agents:
+- name: assistant
+  instruction: You are a helpful AI assistant powered by Ollama that can search the
+    web and provide comprehensive answers.
+  servers:
+  - web_search
+  model: ollama/llama3.2
+secrets:
+- name: OLLAMA_API_KEY
+  value: your-api-key-here
+- name: OLLAMA_BASE_URL
+  value: http://localhost:11434/v1

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Agent
+base:
+  model: anthropic/claude-3-sonnet-20241022
+mcp_servers:
+- name: web_search
+agents:
+- name: assistant
+  instruction: You are a helpful AI assistant that can search the web and provide
+    comprehensive answers.
+  servers:
+  - web_search
+secrets:
+- name: ANTHROPIC_API_KEY
+  values: {}

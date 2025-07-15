@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Agent
+base:
+  model: deepseek/deepseek-chat
+  framework: agno
+mcp_servers:
+- name: web_search
+  command: uvx
+  args:
+  - mcp-server-duckduckgo
+- name: finance
+  command: uvx
+  args:
+  - mcp-server-yfinance
+- name: file
+  command: uvx
+  args:
+  - mcp-server-filesystem
+agents:
+- name: research_coordinator
+  instruction: You are a research coordinator who plans and manages research projects.
+    You analyze requirements, break down tasks, and coordinate with specialists.
+  servers:
+  - web_search
+  - file
+  model: deepseek/deepseek-chat
+- name: data_analyst
+  instruction: You are a financial data analyst specialized in stock analysis, market
+    trends, and investment research. Provide detailed financial insights and recommendations.
+  servers:
+  - finance
+  - file
+  model: openai/gpt-4o
+- name: content_creator
+  instruction: You are a content creator who synthesizes research findings into comprehensive
+    reports, presentations, and summaries.
+  servers:
+  - file
+  model: deepseek/deepseek-chat
+secrets:
+- name: DEEPSEEK_API_KEY
+  values: {}
+- name: DEEPSEEK_BASE_URL
+  values: {}
+- name: OPENAI_API_KEY
+  values: {}
+- name: OPENAI_BASE_URL
+  values: {}

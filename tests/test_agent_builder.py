@@ -10,23 +10,24 @@ Tests cover all aspects of the AgentBuilder including:
 - Integration with AgentfileConfig
 """
 
-import pytest
-import tempfile
 import os
-import yaml
+import tempfile
 from pathlib import Path
-from unittest.mock import patch, mock_open
+from unittest.mock import mock_open, patch
+
+import pytest
+import yaml
 
 from agentman.agent_builder import AgentBuilder, build_from_agentfile
 from agentman.agentfile_parser import (
-    AgentfileConfig,
-    MCPServer,
     Agent,
-    Router,
+    AgentfileConfig,
     Chain,
+    MCPServer,
     Orchestrator,
+    Router,
+    SecretContext,
     SecretValue,
-    SecretContext
 )
 
 
@@ -369,27 +370,25 @@ class TestAgentBuilder:
                 "fastagent.secrets.yaml",
                 "Dockerfile",
                 "requirements.txt",
-                ".dockerignore"
+                ".dockerignore",
             ]
 
             for filename in expected_files:
                 file_path = Path(temp_dir) / filename
                 assert file_path.exists(), f"File {filename} was not created"
 
-    @patch('agentman.agent_builder.AgentfileParser')
-    def test_build_from_agentfile(self, mock_parser_class):
+    @patch('agentman.agent_builder.parse_agentfile')
+    def test_build_from_agentfile(self, mock_parse_agentfile):
         """Test building from Agentfile function."""
-        # Mock the parser and its behavior
-        mock_parser = mock_parser_class.return_value
-        mock_parser.parse_file.return_value = self.config
+        # Mock the parser function and its behavior
+        mock_parse_agentfile.return_value = self.config
 
         with tempfile.TemporaryDirectory() as temp_dir:
             # Call the function
             build_from_agentfile("test_agentfile", temp_dir)
 
             # Verify parser was called correctly
-            mock_parser_class.assert_called_once()
-            mock_parser.parse_file.assert_called_once_with("test_agentfile")
+            mock_parse_agentfile.assert_called_once_with("test_agentfile")
 
             # Check that files were created
             expected_files = [
@@ -398,7 +397,7 @@ class TestAgentBuilder:
                 "fastagent.secrets.yaml",
                 "Dockerfile",
                 "requirements.txt",
-                ".dockerignore"
+                ".dockerignore",
             ]
 
             for filename in expected_files:
@@ -407,9 +406,8 @@ class TestAgentBuilder:
 
     def test_build_from_agentfile_default_output(self):
         """Test building from Agentfile with default output directory."""
-        with patch('agentman.agent_builder.AgentfileParser') as mock_parser_class:
-            mock_parser = mock_parser_class.return_value
-            mock_parser.parse_file.return_value = self.config
+        with patch('agentman.agent_builder.parse_agentfile') as mock_parse_agentfile:
+            mock_parse_agentfile.return_value = self.config
 
             # Mock the AgentBuilder.build_all method to avoid actual file creation
             with patch.object(AgentBuilder, 'build_all') as mock_build_all:
@@ -488,7 +486,7 @@ class TestAgentBuilderEdgeCases:
                 "fastagent.secrets.yaml",
                 "Dockerfile",
                 "requirements.txt",
-                ".dockerignore"
+                ".dockerignore",
             ]
 
             for filename in expected_files:
