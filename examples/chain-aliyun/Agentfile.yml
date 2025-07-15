@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Agent
+base:
+  model: qwen-plus
+mcp_servers:
+- name: fetch
+  command: uvx
+  args:
+  - mcp-server-fetch
+agents:
+- name: url_fetcher
+  instruction: Given a URL, provide a complete and comprehensive summary
+  servers:
+  - fetch
+- name: social_media
+  instruction: Write a 280 character social media post for any given text. Respond
+    only with the post, never use hashtags.
+secrets:
+- name: ALIYUN_API_KEY
+  value: sk-...

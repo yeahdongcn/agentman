@@ -79,30 +79,24 @@ def config_to_yaml_dict(config: AgentfileConfig) -> Dict[str, Any]:
 
     # Agent configuration
     if config.agents:
-        # For now, we'll take the first agent or default agent
-        agent = None
-        for a in config.agents.values():
-            if a.default:
-                agent = a
-                break
-        if not agent:
-            agent = list(config.agents.values())[0]
+        agents_list = []
+        for agent in config.agents.values():
+            agent_dict = {"name": agent.name}
+            if agent.instruction != "You are a helpful agent.":
+                agent_dict["instruction"] = agent.instruction
+            if agent.servers:
+                agent_dict["servers"] = agent.servers
+            if agent.model:
+                agent_dict["model"] = agent.model
+            if not agent.use_history:
+                agent_dict["use_history"] = agent.use_history
+            if agent.human_input:
+                agent_dict["human_input"] = agent.human_input
+            if agent.default:
+                agent_dict["default"] = agent.default
+            agents_list.append(agent_dict)
 
-        agent_dict = {"name": agent.name}
-        if agent.instruction != "You are a helpful agent.":
-            agent_dict["instruction"] = agent.instruction
-        if agent.servers:
-            agent_dict["servers"] = agent.servers
-        if agent.model:
-            agent_dict["model"] = agent.model
-        if not agent.use_history:
-            agent_dict["use_history"] = agent.use_history
-        if agent.human_input:
-            agent_dict["human_input"] = agent.human_input
-        if agent.default:
-            agent_dict["default"] = agent.default
-
-        yaml_data["agent"] = agent_dict
+        yaml_data["agents"] = agents_list
 
     # Command
     if config.cmd != ["python", "agent.py"]:

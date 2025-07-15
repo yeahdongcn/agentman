@@ -54,8 +54,20 @@ class AgentfileYamlParser:
         # Parse MCP servers
         self._parse_mcp_servers(data.get('mcp_servers', []))
 
-        # Parse agent configuration
-        self._parse_agent(data.get('agent', {}))
+        # Parse agents configuration - convert single agent to agents array
+        agents_to_parse = []
+        
+        if 'agent' in data:
+            # Single agent configuration - treat as array with one agent
+            agents_to_parse.append(data['agent'])
+        
+        if 'agents' in data:
+            # Multiple agents configuration
+            agents_to_parse.extend(data['agents'])
+        
+        # Parse all agents
+        for agent_config in agents_to_parse:
+            self._parse_agent(agent_config)
 
         # Parse command
         self._parse_command(data.get('command', []))
@@ -121,6 +133,11 @@ class AgentfileYamlParser:
                     raise ValueError("MCP server 'env' must be a dictionary")
 
             self.config.servers[name] = server
+
+    def _parse_agents(self, agents_config: List[Dict[str, Any]]):
+        """Parse agents configuration."""
+        for agent_config in agents_config:
+            self._parse_agent(agent_config)
 
     def _parse_agent(self, agent_config: Dict[str, Any]):
         """Parse agent configuration."""

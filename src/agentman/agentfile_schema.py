@@ -73,35 +73,39 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
                 "additionalProperties": False,
             },
         },
-        "agent": {
-            "type": "object",
-            "required": ["name"],
-            "properties": {
-                "name": {"type": "string", "description": "Name of the agent"},
-                "instruction": {
-                    "type": "string",
-                    "description": "Instructions for the agent",
-                    "default": "You are a helpful agent.",
+        "agents": {
+            "type": "array",
+            "description": "List of agents",
+            "items": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                    "name": {"type": "string", "description": "Name of the agent"},
+                    "instruction": {
+                        "type": "string",
+                        "description": "Instructions for the agent",
+                        "default": "You are a helpful agent.",
+                    },
+                    "servers": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "List of MCP server names this agent can use",
+                    },
+                    "model": {"type": "string", "description": "Model to use for this agent (overrides base model)"},
+                    "use_history": {
+                        "type": "boolean",
+                        "default": True,
+                        "description": "Whether the agent should use conversation history",
+                    },
+                    "human_input": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Whether the agent should prompt for human input",
+                    },
+                    "default": {"type": "boolean", "default": False, "description": "Whether this is the default agent"},
                 },
-                "servers": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "List of MCP server names this agent can use",
-                },
-                "model": {"type": "string", "description": "Model to use for this agent (overrides base model)"},
-                "use_history": {
-                    "type": "boolean",
-                    "default": True,
-                    "description": "Whether the agent should use conversation history",
-                },
-                "human_input": {
-                    "type": "boolean",
-                    "default": False,
-                    "description": "Whether the agent should prompt for human input",
-                },
-                "default": {"type": "boolean", "default": False, "description": "Whether this is the default agent"},
+                "additionalProperties": False,
             },
-            "additionalProperties": False,
         },
         "command": {
             "type": "array",
@@ -200,18 +204,18 @@ mcp_servers:
     args: [mcp-server-fetch]
     transport: stdio
 
-agent:
-  name: gmail_actions
-  instruction: |
-    You are a productivity assistant with access to my Gmail inbox.
-    Using my personal context, perform the following tasks:
-    1. Only analyze and classify all emails currently in my inbox.
-    2. Assign appropriate labels to each email based on inferred categories.
-    3. Archive each email to keep my inbox clean.
-  servers: [gmail, fetch]
-  use_history: true
-  human_input: false
-  default: true
+agents:
+  - name: gmail_actions
+    instruction: |
+      You are a productivity assistant with access to my Gmail inbox.
+      Using my personal context, perform the following tasks:
+      1. Only analyze and classify all emails currently in my inbox.
+      2. Assign appropriate labels to each email based on inferred categories.
+      3. Archive each email to keep my inbox clean.
+    servers: [gmail, fetch]
+    use_history: true
+    human_input: false
+    default: true
 
 command: [python, agent.py, -p, prompt.txt, --agent, gmail_actions]
 

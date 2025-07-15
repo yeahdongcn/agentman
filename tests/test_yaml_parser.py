@@ -398,6 +398,10 @@ dockerfile:
 class TestFormatDetection:
     """Test suite for format detection functionality."""
 
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.parser = AgentfileYamlParser()
+
     def test_detect_yaml_format_by_extension(self):
         """Test detecting YAML format by file extension."""
         with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
@@ -495,6 +499,135 @@ AGENT test_agent
                 assert "test_agent" in config.agents
             finally:
                 os.unlink(f.name)
+
+    def test_parse_multiple_agents_yaml(self):
+        """Test parsing YAML with multiple agents."""
+        yaml_content = """
+apiVersion: v1
+kind: Agent
+base:
+  model: deepseek/deepseek-chat
+  framework: agno
+mcp_servers:
+- name: web_search
+  command: uvx
+  args:
+  - mcp-server-duckduckgo
+- name: finance
+  command: uvx
+  args:
+  - mcp-server-yfinance
+agents:
+- name: research_coordinator
+  instruction: You are a research coordinator who plans and manages research projects.
+  servers:
+  - web_search
+  model: deepseek/deepseek-chat
+- name: data_analyst
+  instruction: You are a financial data analyst specialized in stock analysis.
+  servers:
+  - finance
+  model: openai/gpt-4o
+- name: content_creator
+  instruction: You are a content creator who synthesizes research findings.
+  servers: []
+  model: deepseek/deepseek-chat
+"""
+        config = self.parser.parse_content(yaml_content)
+
+        # Verify all agents are parsed
+        assert len(config.agents) == 3
+        assert "research_coordinator" in config.agents
+        assert "data_analyst" in config.agents
+        assert "content_creator" in config.agents
+
+        # Verify agent properties
+        coordinator = config.agents["research_coordinator"]
+        assert coordinator.name == "research_coordinator"
+        assert "research coordinator" in coordinator.instruction
+        assert coordinator.servers == ["web_search"]
+        assert coordinator.model == "deepseek/deepseek-chat"
+
+        analyst = config.agents["data_analyst"]
+        assert analyst.name == "data_analyst"
+        assert "financial data analyst" in analyst.instruction
+        assert analyst.servers == ["finance"]
+        assert analyst.model == "openai/gpt-4o"
+
+        creator = config.agents["content_creator"]
+        assert creator.name == "content_creator"
+        assert "content creator" in creator.instruction
+        assert creator.servers == []
+        assert creator.model == "deepseek/deepseek-chat"
+
+    def test_convert_multiple_agents_to_yaml(self):
+        """Test converting multiple agents from Dockerfile to YAML format."""
+        # Import converter function
+        from agentman.converter import config_to_yaml_dict
+        from agentman.agentfile_parser import AgentfileParser
+
+        # Parse a Dockerfile format with multiple agents
+        dockerfile_content = """
+FROM yeahdongcn/agentman-base:latest
+FRAMEWORK agno
+MODEL deepseek/deepseek-chat
+
+SECRET DEEPSEEK_API_KEY
+SECRET OPENAI_API_KEY
+
+MCP_SERVER web_search
+COMMAND uvx
+ARGS mcp-server-duckduckgo
+
+MCP_SERVER finance
+COMMAND uvx
+ARGS mcp-server-yfinance
+
+AGENT research_coordinator
+INSTRUCTION You are a research coordinator who plans and manages research projects.
+SERVERS web_search
+MODEL deepseek/deepseek-chat
+
+AGENT data_analyst
+INSTRUCTION You are a financial data analyst specialized in stock analysis.
+SERVERS finance
+MODEL openai/gpt-4o
+
+AGENT content_creator
+INSTRUCTION You are a content creator who synthesizes research findings.
+MODEL deepseek/deepseek-chat
+"""
+
+        parser = AgentfileParser()
+        config = parser.parse_content(dockerfile_content)
+
+        # Convert to YAML
+        yaml_dict = config_to_yaml_dict(config)
+
+        # Verify the YAML structure has agents (plural)
+        assert "agents" in yaml_dict
+        assert len(yaml_dict["agents"]) == 3
+
+        # Verify agent names
+        agent_names = [agent["name"] for agent in yaml_dict["agents"]]
+        assert "research_coordinator" in agent_names
+        assert "data_analyst" in agent_names
+        assert "content_creator" in agent_names
+
+        # Verify agent details
+        coordinator = next(a for a in yaml_dict["agents"] if a["name"] == "research_coordinator")
+        assert "research coordinator" in coordinator["instruction"]
+        assert coordinator["servers"] == ["web_search"]
+        assert coordinator["model"] == "deepseek/deepseek-chat"
+
+        analyst = next(a for a in yaml_dict["agents"] if a["name"] == "data_analyst")
+        assert "financial data analyst" in analyst["instruction"]
+        assert analyst["servers"] == ["finance"]
+        assert analyst["model"] == "openai/gpt-4o"
+
+        creator = next(a for a in yaml_dict["agents"] if a["name"] == "content_creator")
+        assert "content creator" in creator["instruction"]
+        assert creator["model"] == "deepseek/deepseek-chat"
 
 
 if __name__ == "__main__":
