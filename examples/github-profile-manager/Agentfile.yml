@@ -46,6 +46,14 @@ agents:
     reflects the latest information about the user.
   servers:
   - github-mcp-server
+orchestrators:
+- name: github-profile-manager
+  agents:
+  - github-profile-fetcher
+  - github-profile-markdown-generator
+  - github-profile-updater
+  plan_iterations: 30
+  default: true
 secrets:
 - name: ALIYUN_API_KEY
   value: sk-...

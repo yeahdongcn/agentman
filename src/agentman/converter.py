@@ -98,6 +98,62 @@ def config_to_yaml_dict(config: AgentfileConfig) -> Dict[str, Any]:
 
         yaml_data["agents"] = agents_list
 
+    # Routers
+    if config.routers:
+        routers_list = []
+        for router in config.routers.values():
+            router_dict = {"name": router.name}
+            if router.agents:
+                router_dict["agents"] = router.agents
+            if router.model:
+                router_dict["model"] = router.model
+            if router.instruction:
+                router_dict["instruction"] = router.instruction
+            if router.default:
+                router_dict["default"] = router.default
+            routers_list.append(router_dict)
+        yaml_data["routers"] = routers_list
+
+    # Chains
+    if config.chains:
+        chains_list = []
+        for chain in config.chains.values():
+            chain_dict = {"name": chain.name}
+            if chain.sequence:
+                chain_dict["sequence"] = chain.sequence
+            if chain.instruction:
+                chain_dict["instruction"] = chain.instruction
+            if chain.cumulative:
+                chain_dict["cumulative"] = chain.cumulative
+            if not chain.continue_with_final:
+                chain_dict["continue_with_final"] = chain.continue_with_final
+            if chain.default:
+                chain_dict["default"] = chain.default
+            chains_list.append(chain_dict)
+        yaml_data["chains"] = chains_list
+
+    # Orchestrators
+    if config.orchestrators:
+        orchestrators_list = []
+        for orchestrator in config.orchestrators.values():
+            orchestrator_dict = {"name": orchestrator.name}
+            if orchestrator.agents:
+                orchestrator_dict["agents"] = orchestrator.agents
+            if orchestrator.model:
+                orchestrator_dict["model"] = orchestrator.model
+            if orchestrator.instruction:
+                orchestrator_dict["instruction"] = orchestrator.instruction
+            if orchestrator.plan_type != "full":
+                orchestrator_dict["plan_type"] = orchestrator.plan_type
+            if orchestrator.plan_iterations != 5:
+                orchestrator_dict["plan_iterations"] = orchestrator.plan_iterations
+            if orchestrator.human_input:
+                orchestrator_dict["human_input"] = orchestrator.human_input
+            if orchestrator.default:
+                orchestrator_dict["default"] = orchestrator.default
+            orchestrators_list.append(orchestrator_dict)
+        yaml_data["orchestrators"] = orchestrators_list
+
     # Command
     if config.cmd != ["python", "agent.py"]:
         yaml_data["command"] = config.cmd
@@ -192,6 +248,56 @@ def config_to_dockerfile_content(config: AgentfileConfig) -> str:
         if agent.human_input:
             lines.append("HUMAN_INPUT true")
         if agent.default:
+            lines.append("DEFAULT true")
+        lines.append("")  # Empty line for readability
+
+    # Routers
+    for router in config.routers.values():
+        lines.append(f"ROUTER {router.name}")
+        if router.agents:
+            agents_str = " ".join(router.agents)
+            lines.append(f"AGENTS {agents_str}")
+        if router.model:
+            lines.append(f"MODEL {router.model}")
+        if router.instruction:
+            lines.append(f"INSTRUCTION {router.instruction}")
+        if router.default:
+            lines.append("DEFAULT true")
+        lines.append("")  # Empty line for readability
+
+    # Chains
+    for chain in config.chains.values():
+        lines.append(f"CHAIN {chain.name}")
+        if chain.sequence:
+            sequence_str = " ".join(chain.sequence)
+            lines.append(f"SEQUENCE {sequence_str}")
+        if chain.instruction:
+            lines.append(f"INSTRUCTION {chain.instruction}")
+        if chain.cumulative:
+            lines.append("CUMULATIVE true")
+        if not chain.continue_with_final:
+            lines.append("CONTINUE_WITH_FINAL false")
+        if chain.default:
+            lines.append("DEFAULT true")
+        lines.append("")  # Empty line for readability
+
+    # Orchestrators
+    for orchestrator in config.orchestrators.values():
+        lines.append(f"ORCHESTRATOR {orchestrator.name}")
+        if orchestrator.agents:
+            agents_str = " ".join(orchestrator.agents)
+            lines.append(f"AGENTS {agents_str}")
+        if orchestrator.model:
+            lines.append(f"MODEL {orchestrator.model}")
+        if orchestrator.instruction:
+            lines.append(f"INSTRUCTION {orchestrator.instruction}")
+        if orchestrator.plan_type != "full":
+            lines.append(f"PLAN_TYPE {orchestrator.plan_type}")
+        if orchestrator.plan_iterations != 5:
+            lines.append(f"PLAN_ITERATIONS {orchestrator.plan_iterations}")
+        if orchestrator.human_input:
+            lines.append("HUMAN_INPUT true")
+        if orchestrator.default:
             lines.append("DEFAULT true")
         lines.append("")  # Empty line for readability
 

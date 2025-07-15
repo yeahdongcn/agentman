@@ -9,8 +9,11 @@ from agentman.agentfile_parser import (
     Agent,
     AgentfileConfig,
     AgentfileParser,
+    Chain,
     DockerfileInstruction,
     MCPServer,
+    Orchestrator,
+    Router,
     SecretContext,
     SecretValue,
 )
@@ -66,8 +69,12 @@ class AgentfileYamlParser:
             agents_to_parse.extend(data['agents'])
         
         # Parse all agents
-        for agent_config in agents_to_parse:
-            self._parse_agent(agent_config)
+        self._parse_agents(agents_to_parse)
+
+        # Parse routers, chains, and orchestrators
+        self._parse_routers(data.get('routers', []))
+        self._parse_chains(data.get('chains', []))
+        self._parse_orchestrators(data.get('orchestrators', []))
 
         # Parse command
         self._parse_command(data.get('command', []))
@@ -173,6 +180,102 @@ class AgentfileYamlParser:
             agent.default = bool(agent_config['default'])
 
         self.config.agents[name] = agent
+
+    def _parse_routers(self, routers_config: List[Dict[str, Any]]):
+        """Parse routers configuration."""
+        for router_config in routers_config:
+            if 'name' not in router_config:
+                raise ValueError("Router must have a 'name' field")
+
+            name = router_config['name']
+            router = Router(name=name)
+
+            if 'agents' in router_config:
+                agents = router_config['agents']
+                if isinstance(agents, list):
+                    router.agents = agents
+                else:
+                    raise ValueError("Router 'agents' must be a list")
+
+            if 'model' in router_config:
+                router.model = router_config['model']
+
+            if 'instruction' in router_config:
+                router.instruction = router_config['instruction']
+
+            if 'default' in router_config:
+                router.default = bool(router_config['default'])
+
+            self.config.routers[name] = router
+
+    def _parse_chains(self, chains_config: List[Dict[str, Any]]):
+        """Parse chains configuration."""
+        for chain_config in chains_config:
+            if 'name' not in chain_config:
+                raise ValueError("Chain must have a 'name' field")
+
+            name = chain_config['name']
+            chain = Chain(name=name)
+
+            if 'sequence' in chain_config:
+                sequence = chain_config['sequence']
+                if isinstance(sequence, list):
+                    chain.sequence = sequence
+                else:
+                    raise ValueError("Chain 'sequence' must be a list")
+
+            if 'instruction' in chain_config:
+                chain.instruction = chain_config['instruction']
+
+            if 'cumulative' in chain_config:
+                chain.cumulative = bool(chain_config['cumulative'])
+
+            if 'continue_with_final' in chain_config:
+                chain.continue_with_final = bool(chain_config['continue_with_final'])
+
+            if 'default' in chain_config:
+                chain.default = bool(chain_config['default'])
+
+            self.config.chains[name] = chain
+
+    def _parse_orchestrators(self, orchestrators_config: List[Dict[str, Any]]):
+        """Parse orchestrators configuration."""
+        for orchestrator_config in orchestrators_config:
+            if 'name' not in orchestrator_config:
+                raise ValueError("Orchestrator must have a 'name' field")
+
+            name = orchestrator_config['name']
+            orchestrator = Orchestrator(name=name)
+
+            if 'agents' in orchestrator_config:
+                agents = orchestrator_config['agents']
+                if isinstance(agents, list):
+                    orchestrator.agents = agents
+                else:
+                    raise ValueError("Orchestrator 'agents' must be a list")
+
+            if 'model' in orchestrator_config:
+                orchestrator.model = orchestrator_config['model']
+
+            if 'instruction' in orchestrator_config:
+                orchestrator.instruction = orchestrator_config['instruction']
+
+            if 'plan_type' in orchestrator_config:
+                plan_type = orchestrator_config['plan_type']
+                if plan_type not in ["full", "iterative"]:
+                    raise ValueError(f"Invalid plan type: {plan_type}")
+                orchestrator.plan_type = plan_type
+
+            if 'plan_iterations' in orchestrator_config:
+                orchestrator.plan_iterations = int(orchestrator_config['plan_iterations'])
+
+            if 'human_input' in orchestrator_config:
+                orchestrator.human_input = bool(orchestrator_config['human_input'])
+
+            if 'default' in orchestrator_config:
+                orchestrator.default = bool(orchestrator_config['default'])
+
+            self.config.orchestrators[name] = orchestrator
 
     def _parse_command(self, command_config: List[str]):
         """Parse command configuration."""
