@@ -59,15 +59,15 @@ class AgentfileYamlParser:
 
         # Parse agents configuration - convert single agent to agents array
         agents_to_parse = []
-        
+
         if 'agent' in data:
             # Single agent configuration - treat as array with one agent
             agents_to_parse.append(data['agent'])
-        
+
         if 'agents' in data:
             # Multiple agents configuration
             agents_to_parse.extend(data['agents'])
-        
+
         # Parse all agents
         self._parse_agents(agents_to_parse)
 

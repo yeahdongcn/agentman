@@ -11,14 +11,11 @@ Tests cover all aspects of the AgentfileYamlParser including:
 
 import os
 import tempfile
-from pathlib import Path
 
 import pytest
 
 from agentman.agentfile_parser import (
-    Agent,
     AgentfileConfig,
-    MCPServer,
     SecretContext,
     SecretValue,
 )
@@ -563,8 +560,8 @@ agents:
     def test_convert_multiple_agents_to_yaml(self):
         """Test converting multiple agents from Dockerfile to YAML format."""
         # Import converter function
-        from agentman.converter import config_to_yaml_dict
         from agentman.agentfile_parser import AgentfileParser
+        from agentman.converter import config_to_yaml_dict
 
         # Parse a Dockerfile format with multiple agents
         dockerfile_content = """

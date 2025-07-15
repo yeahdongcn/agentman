@@ -102,7 +102,11 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
                         "default": False,
                         "description": "Whether the agent should prompt for human input",
                     },
-                    "default": {"type": "boolean", "default": False, "description": "Whether this is the default agent"},
+                    "default": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Whether this is the default agent",
+                    },
                 },
                 "additionalProperties": False,
             },

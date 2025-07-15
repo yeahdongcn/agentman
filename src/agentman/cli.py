@@ -292,13 +292,13 @@ def run_parser(subparsers):
     parser = subparsers.add_parser("run", help="Create and run a new container from an agent")
     parser.add_argument("-f", "--file", default="Agentfile", help="Name of the Agentfile (when building from source)")
     parser.add_argument(
-        "-o", "--output", help="Output directory for generated files " "(default: agent, when building from source)"
+        "-o", "--output", help="Output directory for generated files (default: agent, when building from source)"
     )
     parser.add_argument("-t", "--tag", default="agent:latest", help="Name and optionally a tag for the Docker image")
     parser.add_argument(
         "--from-agentfile",
         action="store_true",
-        help="Build from Agentfile and then run " "(default is to run existing image)",
+        help="Build from Agentfile and then run (default is to run existing image)",
     )
     parser.add_argument(
         "--format",
@@ -308,17 +308,15 @@ def run_parser(subparsers):
     parser.add_argument(
         "--from-yaml", action="store_true", help="Build from YAML Agentfile format (same as --format yaml)"
     )
-    parser.add_argument("--path", default=".", help="Build context (directory or URL) " "when building from Agentfile")
+    parser.add_argument("--path", default=".", help="Build context (directory or URL) when building from Agentfile")
     parser.add_argument("-i", "--interactive", action="store_true", help="Run container interactively")
     parser.add_argument(
         "--rm", dest="remove", action="store_true", help="Automatically remove the container when it exits"
     )
     parser.add_argument(
-        "-p", "--port", action="append", help="Publish container port(s) to the host " "(can be used multiple times)"
+        "-p", "--port", action="append", help="Publish container port(s) to the host (can be used multiple times)"
     )
-    parser.add_argument(
-        "-e", "--env", action="append", help="Set environment variables " "(can be used multiple times)"
-    )
+    parser.add_argument("-e", "--env", action="append", help="Set environment variables (can be used multiple times)")
     parser.add_argument("-v", "--volume", action="append", help="Bind mount volumes (can be used multiple times)")
     parser.add_argument("command", nargs="*", help="Command to run in the container (overrides default)")
     runtime_options(parser, "run")
