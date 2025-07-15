@@ -1,8 +1,42 @@
 """Agentfile parser module for parsing Agentfile configurations."""
 
 import json
+import os
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
+
+
+def expand_env_vars(value: str) -> str:
+    """
+    Expand environment variables in a string.
+    
+    Supports both ${VAR} and $VAR syntax.
+    If environment variable is not found, returns the original placeholder.
+    
+    Args:
+        value: String that may contain environment variable references
+        
+    Returns:
+        String with environment variables expanded
+    """
+    if not isinstance(value, str):
+        return value
+    
+    # Pattern to match ${VAR} or $VAR (where VAR is alphanumeric + underscore)
+    pattern = r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)'
+    
+    def replace_var(match):
+        # Get the variable name from either group
+        var_name = match.group(1) or match.group(2)
+        env_value = os.environ.get(var_name)
+        if env_value is not None:
+            return env_value
+        else:
+            # Return the original placeholder if env var not found
+            return match.group(0)
+    
+    return re.sub(pattern, replace_var, value)
 
 
 @dataclass
@@ -516,7 +550,8 @@ class AgentfileParser:
         # Check if it's an inline value: SECRET KEY value
         if len(parts) >= 3:
             value = ' '.join(parts[2:])  # Join all remaining parts as the value
-            secret = SecretValue(name=secret_name, value=self._unquote(value))
+            expanded_value = expand_env_vars(self._unquote(value))
+            secret = SecretValue(name=secret_name, value=expanded_value)
             self.config.secrets.append(secret)
             self.current_context = None
         # Check if it's a context (no value, will be populated with sub-instructions)
@@ -565,7 +600,8 @@ class AgentfileParser:
         if len(parts) >= 2:
             key = instruction.upper()
             value = ' '.join(parts[1:])
-            secret_context.values[key] = self._unquote(value)
+            expanded_value = expand_env_vars(self._unquote(value))
+            secret_context.values[key] = expanded_value
         else:
             raise ValueError("SECRET context requires KEY VALUE format")
 
@@ -680,14 +716,16 @@ class AgentfileParser:
                     key, value = env_part.split('=', 1)  # Split only on first =
                     key = self._unquote(key)
                     value = self._unquote(value)
-                    server.env[key] = value
+                    expanded_value = expand_env_vars(value)
+                    server.env[key] = expanded_value
                 else:
                     raise ValueError("ENV requires KEY VALUE or KEY=VALUE")
             elif len(parts) >= 3:
                 # Handle KEY VALUE format
                 key = self._unquote(parts[1])
                 value = self._unquote(' '.join(parts[2:]))  # Join remaining parts as value
-                server.env[key] = value
+                expanded_value = expand_env_vars(value)
+                server.env[key] = expanded_value
             else:
                 raise ValueError("ENV requires KEY VALUE or KEY=VALUE")
 
