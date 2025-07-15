@@ -15,6 +15,11 @@ agents:
 - name: social_media
   instruction: Write a 280 character social media post for any given text. Respond
     only with the post, never use hashtags.
+chains:
+- name: post_writer
+  sequence:
+  - url_fetcher
+  - social_media
 secrets:
 - name: ALIYUN_API_KEY
   value: sk-...
