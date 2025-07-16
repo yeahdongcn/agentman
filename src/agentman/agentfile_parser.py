@@ -10,22 +10,22 @@ from typing import Any, Dict, List, Optional, Union
 def expand_env_vars(value: str) -> str:
     """
     Expand environment variables in a string.
-    
+
     Supports both ${VAR} and $VAR syntax.
     If environment variable is not found, returns the original placeholder.
-    
+
     Args:
         value: String that may contain environment variable references
-        
+
     Returns:
         String with environment variables expanded
     """
     if not isinstance(value, str):
         return value
-    
+
     # Pattern to match ${VAR} or $VAR (where VAR is alphanumeric + underscore)
     pattern = r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)'
-    
+
     def replace_var(match):
         # Get the variable name from either group
         var_name = match.group(1) or match.group(2)
@@ -35,7 +35,7 @@ def expand_env_vars(value: str) -> str:
         else:
             # Return the original placeholder if env var not found
             return match.group(0)
-    
+
     return re.sub(pattern, replace_var, value)
 
 
