@@ -45,7 +45,12 @@ Get your first AI agent running in under 2 minutes:
 
 ```bash
 # 1. Install Agentman
+
+# From PyPI (recommended)
 pip install agentman-mcp
+
+# Or, install the latest version from GitHub using uv
+uv tool install git+https://github.com/o3-cloud/agentman.git@main#egg=agentman-mcp
 
 # 2. Create and run your first agent
 mkdir my-agent && cd my-agent
@@ -214,6 +219,32 @@ The intuitive `Agentfile` syntax lets you focus on designing intelligent workflo
 | **🚀 Production-Ready** | Optimized Docker containers with dependency management |
 | **🔐 Secure Secrets** | Environment-based secret handling with templates |
 | **🧪 Battle-Tested** | 91%+ test coverage ensures reliability |
+
+### ✨ Environment Variable Expansion in Agentfiles
+
+Now you can use environment variables directly in your `Agentfile` and `Agentfile.yml` for more flexible and secure configurations.
+
+**Usage examples:**
+
+**Agentfile format**
+```dockerfile
+# Agentfile format
+SECRET ALIYUN_API_KEY ${ALIYUN_API_KEY}
+MCP_SERVER github-mcp-server
+ENV GITHUB_PERSONAL_ACCESS_TOKEN ${GITHUB_TOKEN}
+```
+
+**YAML format**
+```yaml
+# YAML format
+secrets:
+  - name: ALIYUN_API_KEY
+    value: ${ALIYUN_API_KEY}
+mcp_servers:
+  - name: github-mcp-server
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_TOKEN}
+```
 
 ### 🌟 What Makes Agentman Different?
 
@@ -744,7 +775,7 @@ agentman/
 ## 🏗️ Building from Source
 
 ```bash
-git clone https://github.com/yeahdongcn/agentman.git
+git clone https://github.com/o3-cloud/agentman.git
 cd agentman
 
 # Install

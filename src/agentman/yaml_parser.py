@@ -16,6 +16,7 @@ from agentman.agentfile_parser import (
     Router,
     SecretContext,
     SecretValue,
+    expand_env_vars,
 )
 
 
@@ -135,7 +136,11 @@ class AgentfileYamlParser:
             if 'env' in server_config:
                 env = server_config['env']
                 if isinstance(env, dict):
-                    server.env = env
+                    # Expand environment variables in values
+                    expanded_env = {}
+                    for key, value in env.items():
+                        expanded_env[key] = expand_env_vars(value)
+                    server.env = expanded_env
                 else:
                     raise ValueError("MCP server 'env' must be a dictionary")
 
@@ -299,13 +304,18 @@ class AgentfileYamlParser:
 
                 if 'value' in secret_config:
                     # Inline secret value
-                    secret = SecretValue(name=name, value=secret_config['value'])
+                    expanded_value = expand_env_vars(secret_config['value'])
+                    secret = SecretValue(name=name, value=expanded_value)
                     self.config.secrets.append(secret)
                 elif 'values' in secret_config:
                     # Secret context with multiple values
                     values = secret_config['values']
                     if isinstance(values, dict):
-                        secret = SecretContext(name=name, values=values)
+                        # Expand environment variables in values
+                        expanded_values = {}
+                        for key, value in values.items():
+                            expanded_values[key] = expand_env_vars(value)
+                        secret = SecretContext(name=name, values=expanded_values)
                         self.config.secrets.append(secret)
                     else:
                         raise ValueError("Secret 'values' must be a dictionary")
