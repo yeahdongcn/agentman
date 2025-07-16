@@ -32,9 +32,8 @@ def expand_env_vars(value: str) -> str:
         env_value = os.environ.get(var_name)
         if env_value is not None:
             return env_value
-        else:
             # Return the original placeholder if env var not found
-            return match.group(0)
+        return match.group(0)
 
     return re.sub(pattern, replace_var, value)
 
