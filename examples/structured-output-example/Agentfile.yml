@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Agent
+
+base:
+  model: anthropic/claude-3-sonnet
+  framework: fast-agent
+
+mcp_servers:
+  - name: fetch
+    command: uvx
+    args: [mcp-server-fetch]
+    transport: stdio
+
+agents:
+  - name: sentiment_analyzer
+    instruction: |
+      Analyze the sentiment of provided text and return structured results.
+      Classify sentiment as positive, negative, or neutral with confidence scores.
+    servers: [fetch]
+    use_history: false
+    output_format:
+      type: json_schema
+      schema:
+        type: object
+        properties:
+          text:
+            type: string
+            description: The original text analyzed
+          sentiment:
+            type: string
+            enum: [positive, negative, neutral]
+            description: The detected sentiment
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+            description: Confidence score for the sentiment classification
+          keywords:
+            type: array
+            items:
+              type: string
+            description: Key words that influenced the sentiment
+        required: [text, sentiment, confidence, keywords]
+
+  - name: data_extractor
+    instruction: |
+      Extract structured data from documents and web pages.
+      Return results according to the predefined schema.
+    servers: [fetch]
+    output_format:
+      type: schema_file
+      file: ./schemas/extraction_schema.yaml
+
+command: [python, agent.py]

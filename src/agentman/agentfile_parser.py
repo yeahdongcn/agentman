@@ -66,6 +66,14 @@ class MCPServer:
 
 
 @dataclass
+class OutputFormat:
+    """Represents output format configuration for an agent."""
+    type: str  # "json_schema" or "schema_file"
+    schema: Optional[Dict[str, Any]] = None  # For inline JSON Schema as YAML
+    file: Optional[str] = None  # For external schema file reference
+
+
+@dataclass
 class Agent:
     """Represents an agent configuration."""
 
@@ -76,6 +84,7 @@ class Agent:
     use_history: bool = True
     human_input: bool = False
     default: bool = False
+    output_format: Optional[OutputFormat] = None
 
     def to_decorator_string(self, default_model: Optional[str] = None) -> str:
         """Generate the @fast.agent decorator string."""
@@ -411,6 +420,7 @@ class AgentfileParser:
             "API_KEY",
             "BASE_URL",
             "DEFAULT",
+            "OUTPUT_FORMAT",
         ]:
             self._handle_sub_instruction(instruction, parts)
         # Handle ENV - could be Dockerfile instruction or sub-instruction
@@ -756,6 +766,34 @@ class AgentfileParser:
             if len(parts) < 2:
                 raise ValueError("DEFAULT requires true/false")
             agent.default = self._unquote(parts[1]).lower() in ['true', '1', 'yes']
+        elif instruction == "OUTPUT_FORMAT":
+            if len(parts) < 2:
+                raise ValueError("OUTPUT_FORMAT requires a format type")
+            format_type = self._unquote(parts[1])
+            if format_type == "json_schema":
+                if len(parts) < 3:
+                    raise ValueError("OUTPUT_FORMAT json_schema requires a schema definition or file reference")
+                schema_value = self._unquote(' '.join(parts[2:]))
+                # Try to parse as inline YAML/JSON schema
+                try:
+                    import yaml
+                    schema_dict = yaml.safe_load(schema_value)
+                    agent.output_format = OutputFormat(type="json_schema", schema=schema_dict)
+                except (ImportError, yaml.YAMLError):
+                    # Fallback: treat as file reference if it looks like a path
+                    if schema_value.endswith(('.json', '.yaml', '.yml')):
+                        agent.output_format = OutputFormat(type="schema_file", file=schema_value)
+                    else:
+                        raise ValueError("OUTPUT_FORMAT json_schema requires valid YAML/JSON schema or file path")
+            elif format_type == "schema_file":
+                if len(parts) < 3:
+                    raise ValueError("OUTPUT_FORMAT schema_file requires a file path")
+                file_path = self._unquote(parts[2])
+                if not file_path.endswith(('.json', '.yaml', '.yml')):
+                    raise ValueError("OUTPUT_FORMAT schema_file must reference a .json, .yaml, or .yml file")
+                agent.output_format = OutputFormat(type="schema_file", file=file_path)
+            else:
+                raise ValueError(f"Invalid OUTPUT_FORMAT type: {format_type}. Supported: json_schema, schema_file")
 
     def _handle_router_sub_instruction(self, instruction: str, parts: List[str]):
         """Handle sub-instructions for ROUTER context."""

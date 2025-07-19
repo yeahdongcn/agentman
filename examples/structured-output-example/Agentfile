@@ -1,0 +1,21 @@
+FROM yeahdongcn/agentman-base:latest
+MODEL anthropic/claude-3-sonnet
+FRAMEWORK fast-agent
+
+MCP_SERVER fetch
+COMMAND uvx
+ARGS mcp-server-fetch
+TRANSPORT stdio
+
+AGENT sentiment_analyzer
+INSTRUCTION Analyze the sentiment of provided text and return structured results. Classify sentiment as positive, negative, or neutral with confidence scores.
+SERVERS fetch
+USE_HISTORY false
+OUTPUT_FORMAT json_schema {"type":"object","properties":{"text":{"type":"string","description":"The original text analyzed"},"sentiment":{"type":"string","enum":["positive","negative","neutral"],"description":"The detected sentiment"},"confidence":{"type":"number","minimum":0,"maximum":1,"description":"Confidence score for the sentiment classification"},"keywords":{"type":"array","items":{"type":"string"},"description":"Key words that influenced the sentiment"}},"required":["text","sentiment","confidence","keywords"]}
+
+AGENT file_processor
+INSTRUCTION Process files and extract structured information according to the schema.
+SERVERS fetch
+OUTPUT_FORMAT schema_file ./schemas/simple_schema.json
+
+CMD ["python", "agent.py"]
