@@ -470,6 +470,13 @@ class TestAgentBuilder:
 class TestAgentBuilderEdgeCases:
     """Test edge cases and error conditions for AgentBuilder."""
 
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.config = AgentfileConfig()
+        self.config.base_image = "yeahdongcn/agentman-base:latest"
+        self.config.default_model = "generic.qwen3:latest"
+        self.config.cmd = ["python", "agent.py"]
+
     def test_empty_config(self):
         """Test builder with minimal empty configuration."""
         config = AgentfileConfig()

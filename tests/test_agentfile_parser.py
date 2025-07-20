@@ -491,6 +491,17 @@ SERVERS server1 server2
 class TestDataClasses:
     """Test suite for data classes used by AgentfileParser."""
 
+    def setup_method(self):
+        """Set up test fixtures."""
+        self.parser = AgentfileParser()
+
+    def _find_instruction_by_type(self, instructions, instruction_type):
+        """Helper method to find instruction by type."""
+        for instruction in instructions:
+            if instruction.instruction == instruction_type:
+                return instruction
+        return None
+
     def test_mcp_server_creation(self):
         """Test MCPServer data class creation."""
         server = MCPServer(
