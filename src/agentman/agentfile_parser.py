@@ -6,6 +6,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
+import yaml
+
 
 def expand_env_vars(value: str) -> str:
     """
@@ -129,7 +131,7 @@ class Agent:
 
             return f"RequestParams(response_format={response_format})"
 
-        elif self.output_format.type == "schema_file" and self.output_format.file:
+        if self.output_format.type == "schema_file" and self.output_format.file:
             # Load and convert external schema file
             return self._generate_request_params_from_file(base_path)
 
@@ -137,10 +139,6 @@ class Agent:
 
     def _generate_request_params_from_file(self, base_path: Optional[str] = None) -> str:
         """Generate RequestParams by loading schema from external file."""
-        import json
-        import os
-
-        import yaml
 
         file_path = self.output_format.file
 
@@ -350,8 +348,6 @@ class AgentfileParser:
     def parse_file(self, filepath: str) -> AgentfileConfig:
         """Parse an Agentfile and return the configuration."""
         # Store the directory containing the Agentfile for resolving relative paths
-        import os
-
         self.base_path = os.path.dirname(os.path.abspath(filepath))
 
         with open(filepath, 'r', encoding='utf-8') as f:
@@ -849,8 +845,6 @@ class AgentfileParser:
                 schema_value = self._unquote(' '.join(parts[2:]))
                 # Try to parse as inline YAML/JSON schema
                 try:
-                    import yaml
-
                     schema_dict = yaml.safe_load(schema_value)
                     agent.output_format = OutputFormat(type="json_schema", schema=schema_dict)
                 except (ImportError, yaml.YAMLError) as err:
@@ -858,7 +852,9 @@ class AgentfileParser:
                     if schema_value.endswith(('.json', '.yaml', '.yml')):
                         agent.output_format = OutputFormat(type="schema_file", file=schema_value)
                     else:
-                        raise ValueError("OUTPUT_FORMAT json_schema requires valid YAML/JSON schema or file path") from err
+                        raise ValueError(
+                            "OUTPUT_FORMAT json_schema requires valid YAML/JSON schema or file path"
+                        ) from err
             elif format_type == "schema_file":
                 if len(parts) < 3:
                     raise ValueError("OUTPUT_FORMAT schema_file requires a file path")
