@@ -86,8 +86,8 @@ EXPOSE 8080
     print(f"Dockerfile instructions: {len(config.dockerfile_instructions)}")
     
     # Build the agent in a temporary directory
-    import tempfile
     import os
+    import tempfile
     from pathlib import Path
     
     with tempfile.TemporaryDirectory() as temp_dir:

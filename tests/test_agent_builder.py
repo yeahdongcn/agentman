@@ -569,7 +569,7 @@ class TestAgentBuilderEdgeCases:
     def test_generate_dockerfile_with_entrypoint_from_instructions(self):
         """Test Dockerfile generation with ENTRYPOINT from dockerfile instructions."""
         from agentman.agentfile_parser import DockerfileInstruction
-        
+
         # Add ENTRYPOINT instruction
         entrypoint_instruction = DockerfileInstruction(instruction="ENTRYPOINT", args=["./entrypoint.sh"])
         self.config.dockerfile_instructions.append(entrypoint_instruction)
@@ -587,7 +587,7 @@ class TestAgentBuilderEdgeCases:
     def test_generate_dockerfile_entrypoint_priority(self):
         """Test that ENTRYPOINT from dockerfile instructions takes priority over config."""
         from agentman.agentfile_parser import DockerfileInstruction
-        
+
         # Set both config entrypoint and dockerfile instruction
         self.config.entrypoint = ["python", "agent.py"]
         entrypoint_instruction = DockerfileInstruction(instruction="ENTRYPOINT", args=["./wrapper.sh"])
