@@ -139,6 +139,7 @@ class Agent:
         """Generate RequestParams by loading schema from external file."""
         import json
         import os
+
         import yaml
 
         file_path = self.output_format.file
@@ -852,12 +853,12 @@ class AgentfileParser:
 
                     schema_dict = yaml.safe_load(schema_value)
                     agent.output_format = OutputFormat(type="json_schema", schema=schema_dict)
-                except (ImportError, yaml.YAMLError):
+                except (ImportError, yaml.YAMLError) as err:
                     # Fallback: treat as file reference if it looks like a path
                     if schema_value.endswith(('.json', '.yaml', '.yml')):
                         agent.output_format = OutputFormat(type="schema_file", file=schema_value)
                     else:
-                        raise ValueError("OUTPUT_FORMAT json_schema requires valid YAML/JSON schema or file path")
+                        raise ValueError("OUTPUT_FORMAT json_schema requires valid YAML/JSON schema or file path") from err
             elif format_type == "schema_file":
                 if len(parts) < 3:
                     raise ValueError("OUTPUT_FORMAT schema_file requires a file path")
