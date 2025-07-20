@@ -576,6 +576,78 @@ class TestDataClasses:
         assert orchestrator.instruction == "Orchestrate agents"
         assert orchestrator.default is True
 
+    def test_parse_content_with_entrypoint_array_format(self):
+        """Test parsing ENTRYPOINT instruction in array format."""
+        content = """
+FROM python:3.11-slim
+ENTRYPOINT ["python", "agent.py"]
+"""
+        config = self.parser.parse_content(content)
+
+        assert config.entrypoint == ["python", "agent.py"]
+        
+        # Check that ENTRYPOINT instruction is captured
+        entrypoint_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "ENTRYPOINT")
+        assert entrypoint_instruction is not None
+        assert entrypoint_instruction.instruction == "ENTRYPOINT"
+        assert entrypoint_instruction.args == ["python", "agent.py"]
+
+    def test_parse_content_with_entrypoint_simple_format(self):
+        """Test parsing ENTRYPOINT instruction in simple format."""
+        content = """
+FROM python:3.11-slim
+ENTRYPOINT python agent.py
+"""
+        config = self.parser.parse_content(content)
+
+        assert config.entrypoint == ["python", "agent.py"]
+        
+        # Check that ENTRYPOINT instruction is captured
+        entrypoint_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "ENTRYPOINT")
+        assert entrypoint_instruction is not None
+        assert entrypoint_instruction.instruction == "ENTRYPOINT"
+        assert entrypoint_instruction.args == ["python", "agent.py"]
+
+    def test_parse_content_with_entrypoint_and_cmd(self):
+        """Test parsing content with both ENTRYPOINT and CMD instructions."""
+        content = """
+FROM python:3.11-slim
+ENTRYPOINT ["python", "agent.py"]
+CMD ["--help"]
+"""
+        config = self.parser.parse_content(content)
+
+        assert config.entrypoint == ["python", "agent.py"]
+        assert config.cmd == ["--help"]
+        
+        # Check that both instructions are captured
+        entrypoint_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "ENTRYPOINT")
+        assert entrypoint_instruction is not None
+        assert entrypoint_instruction.args == ["python", "agent.py"]
+        
+        cmd_instruction = self._find_instruction_by_type(config.dockerfile_instructions, "CMD")
+        assert cmd_instruction is not None
+        assert cmd_instruction.args == ["--help"]
+
+    def test_parse_content_with_entrypoint_complex_array(self):
+        """Test parsing ENTRYPOINT instruction with complex array format."""
+        content = """
+FROM python:3.11-slim
+ENTRYPOINT ["./entrypoint.sh", "python", "agent.py"]
+"""
+        config = self.parser.parse_content(content)
+
+        assert config.entrypoint == ["./entrypoint.sh", "python", "agent.py"]
+
+    def test_parse_content_entrypoint_error_no_args(self):
+        """Test that ENTRYPOINT without arguments raises error."""
+        content = """
+FROM python:3.11-slim
+ENTRYPOINT
+"""
+        with pytest.raises(ValueError, match="ENTRYPOINT requires at least one argument"):
+            self.parser.parse_content(content)
+
     def test_agentfile_config_creation(self):
         """Test AgentfileConfig data class creation."""
         config = AgentfileConfig(

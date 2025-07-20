@@ -81,6 +81,9 @@ class AgentfileYamlParser:
         # Parse command
         self._parse_command(data.get('command', []))
 
+        # Parse entrypoint
+        self._parse_entrypoint(data.get('entrypoint', []))
+
         # Parse secrets if they exist
         self._parse_secrets(data.get('secrets', []))
 
@@ -319,6 +322,14 @@ class AgentfileYamlParser:
                 self.config.cmd = command_config
             else:
                 raise ValueError("Command must be a list")
+
+    def _parse_entrypoint(self, entrypoint_config: List[str]):
+        """Parse entrypoint configuration."""
+        if entrypoint_config:
+            if isinstance(entrypoint_config, list):
+                self.config.entrypoint = entrypoint_config
+            else:
+                raise ValueError("Entrypoint must be a list")
 
     def _parse_secrets(self, secrets_config: List[Union[str, Dict[str, Any]]]):
         """Parse secrets configuration."""

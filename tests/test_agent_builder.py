@@ -529,6 +529,75 @@ class TestAgentBuilderEdgeCases:
             secrets_file = Path(temp_dir) / "fastagent.secrets.yaml"
             assert secrets_file.exists()
 
+    def test_generate_dockerfile_with_entrypoint(self):
+        """Test Dockerfile generation with ENTRYPOINT instruction."""
+        self.config.entrypoint = ["python", "agent.py"]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            builder = AgentBuilder(self.config, temp_dir)
+            builder._generate_dockerfile()
+
+            dockerfile = Path(temp_dir) / "Dockerfile"
+            with open(dockerfile, 'r') as f:
+                content = f.read()
+
+            assert 'ENTRYPOINT ["python", "agent.py"]' in content
+
+    def test_generate_dockerfile_with_entrypoint_and_cmd(self):
+        """Test Dockerfile generation with both ENTRYPOINT and CMD."""
+        self.config.entrypoint = ["python", "agent.py"]
+        self.config.cmd = ["--help"]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            builder = AgentBuilder(self.config, temp_dir)
+            builder._generate_dockerfile()
+
+            dockerfile = Path(temp_dir) / "Dockerfile"
+            with open(dockerfile, 'r') as f:
+                content = f.read()
+
+            assert 'ENTRYPOINT ["python", "agent.py"]' in content
+            assert 'CMD ["--help"]' in content
+
+    def test_generate_dockerfile_with_entrypoint_from_instructions(self):
+        """Test Dockerfile generation with ENTRYPOINT from dockerfile instructions."""
+        from agentman.agentfile_parser import DockerfileInstruction
+        
+        # Add ENTRYPOINT instruction
+        entrypoint_instruction = DockerfileInstruction(instruction="ENTRYPOINT", args=["./entrypoint.sh"])
+        self.config.dockerfile_instructions.append(entrypoint_instruction)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            builder = AgentBuilder(self.config, temp_dir)
+            builder._generate_dockerfile()
+
+            dockerfile = Path(temp_dir) / "Dockerfile"
+            with open(dockerfile, 'r') as f:
+                content = f.read()
+
+            assert 'ENTRYPOINT ["./entrypoint.sh"]' in content
+
+    def test_generate_dockerfile_entrypoint_priority(self):
+        """Test that ENTRYPOINT from dockerfile instructions takes priority over config."""
+        from agentman.agentfile_parser import DockerfileInstruction
+        
+        # Set both config entrypoint and dockerfile instruction
+        self.config.entrypoint = ["python", "agent.py"]
+        entrypoint_instruction = DockerfileInstruction(instruction="ENTRYPOINT", args=["./wrapper.sh"])
+        self.config.dockerfile_instructions.append(entrypoint_instruction)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            builder = AgentBuilder(self.config, temp_dir)
+            builder._generate_dockerfile()
+
+            dockerfile = Path(temp_dir) / "Dockerfile"
+            with open(dockerfile, 'r') as f:
+                content = f.read()
+
+            # Should contain the dockerfile instruction version, not the config version
+            assert 'ENTRYPOINT ["./wrapper.sh"]' in content
+            assert 'ENTRYPOINT ["python", "agent.py"]' not in content
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

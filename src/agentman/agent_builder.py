@@ -94,14 +94,14 @@ class AgentBuilder:
         )
 
         # Add all other Dockerfile instructions in order (except FROM)
-        # We'll handle EXPOSE and CMD at the end in their proper positions
+        # We'll handle EXPOSE, ENTRYPOINT and CMD at the end in their proper positions
         for instruction in self.config.dockerfile_instructions:
-            if instruction.instruction not in ["FROM", "EXPOSE", "CMD"]:
+            if instruction.instruction not in ["FROM", "EXPOSE", "ENTRYPOINT", "CMD"]:
                 lines.append(instruction.to_dockerfile_line())
 
         # Add a blank line if we have custom instructions
         custom_instructions = [
-            inst for inst in self.config.dockerfile_instructions if inst.instruction not in ["FROM", "EXPOSE", "CMD"]
+            inst for inst in self.config.dockerfile_instructions if inst.instruction not in ["FROM", "EXPOSE", "ENTRYPOINT", "CMD"]
         ]
         if custom_instructions:
             lines.append("")
@@ -140,6 +140,16 @@ class AgentBuilder:
             expose_lines = [f"EXPOSE {port}" for port in self.config.expose_ports]
             lines.extend(expose_lines)
             lines.append("")
+
+        # Add ENTRYPOINT instructions from custom dockerfile instructions first
+        entrypoint_instructions = [inst for inst in self.config.dockerfile_instructions if inst.instruction == "ENTRYPOINT"]
+        if entrypoint_instructions:
+            for instruction in entrypoint_instructions:
+                lines.append(instruction.to_dockerfile_line()) 
+        elif self.config.entrypoint:
+            # Custom entrypoint from config
+            entrypoint_str = json.dumps(self.config.entrypoint)
+            lines.append(f"ENTRYPOINT {entrypoint_str}")
 
         # Add CMD instructions from custom dockerfile instructions first
         cmd_instructions = [inst for inst in self.config.dockerfile_instructions if inst.instruction == "CMD"]

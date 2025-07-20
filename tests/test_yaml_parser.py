@@ -391,6 +391,77 @@ dockerfile:
         # Verify dockerfile instructions
         assert len(config.dockerfile_instructions) == 2
 
+    def test_parse_content_with_entrypoint(self):
+        """Test parsing YAML with entrypoint configuration."""
+        content = """
+apiVersion: v1
+kind: Agent
+
+base:
+  image: python:3.11-slim
+  framework: fast-agent
+
+entrypoint: ["python", "agent.py"]
+command: ["--help"]
+
+expose:
+  - 8080
+"""
+        config = self.parser.parse_content(content)
+
+        assert config.base_image == "python:3.11-slim"
+        assert config.framework == "fast-agent"
+        assert config.entrypoint == ["python", "agent.py"]
+        assert config.cmd == ["--help"]
+        assert config.expose_ports == [8080]
+
+    def test_parse_content_with_entrypoint_only(self):
+        """Test parsing YAML with only entrypoint configuration."""
+        content = """
+apiVersion: v1
+kind: Agent
+
+base:
+  image: python:3.11-slim
+
+entrypoint: ["./entrypoint.sh", "python", "agent.py"]
+"""
+        config = self.parser.parse_content(content)
+
+        assert config.entrypoint == ["./entrypoint.sh", "python", "agent.py"]
+        # Default cmd should remain
+        assert config.cmd == ["python", "agent.py"]
+
+    def test_parse_content_entrypoint_validation_error(self):
+        """Test that invalid entrypoint format raises error."""
+        content = """
+apiVersion: v1
+kind: Agent
+
+base:
+  image: python:3.11-slim
+
+entrypoint: "not-a-list"
+"""
+        with pytest.raises(ValueError, match="Entrypoint must be a list"):
+            self.parser.parse_content(content)
+
+    def test_parse_content_with_empty_entrypoint(self):
+        """Test parsing YAML with empty entrypoint configuration."""
+        content = """
+apiVersion: v1
+kind: Agent
+
+base:
+  image: python:3.11-slim
+
+entrypoint: []
+"""
+        config = self.parser.parse_content(content)
+
+        # Empty entrypoint should result in empty list
+        assert config.entrypoint == []
+
 
 class TestFormatDetection:
     """Test suite for format detection functionality."""

@@ -59,5 +59,60 @@ CMD ["python", "agent.py"]
         print("\n✅ All checks passed! EXPOSE and CMD instructions are properly included.")
 
 
+def test_dockerfile_generation_with_entrypoint_and_cmd():
+    """Test that ENTRYPOINT and CMD instructions from Agentfile are included in generated Dockerfile."""
+    
+    # Create a test Agentfile content with ENTRYPOINT and CMD instructions
+    agentfile_content = """
+FROM yeahdongcn/agentman-base:latest
+MODEL gpt-4
+FRAMEWORK fast-agent
+
+ENTRYPOINT ["python", "agent.py"]
+CMD ["--help"]
+EXPOSE 8080
+"""
+    
+    # Parse the Agentfile content
+    parser = AgentfileParser()
+    config = parser.parse_content(agentfile_content)
+    
+    print(f"Base image: {config.base_image}")
+    print(f"Model: {config.default_model}")
+    print(f"Framework: {config.framework}")
+    print(f"ENTRYPOINT: {config.entrypoint}")
+    print(f"CMD: {config.cmd}")
+    print(f"Expose ports: {config.expose_ports}")
+    print(f"Dockerfile instructions: {len(config.dockerfile_instructions)}")
+    
+    # Build the agent in a temporary directory
+    import tempfile
+    import os
+    from pathlib import Path
+    
+    with tempfile.TemporaryDirectory() as temp_dir:
+        print(f"Building agent in: {temp_dir}")
+        
+        builder = AgentBuilder(config, temp_dir, ".")
+        builder.build_all()
+        
+        # Read the generated Dockerfile
+        dockerfile_path = Path(temp_dir) / "Dockerfile"
+        assert dockerfile_path.exists(), "Dockerfile was not generated"
+        
+        with open(dockerfile_path, 'r') as f:
+            dockerfile_content = f.read()
+        
+        print(f"\nGenerated Dockerfile:\n{dockerfile_content}")
+        
+        # Verify ENTRYPOINT, CMD and EXPOSE instructions are present
+        assert 'EXPOSE 8080' in dockerfile_content, "EXPOSE instruction not found in Dockerfile"
+        assert 'ENTRYPOINT ["python", "agent.py"]' in dockerfile_content, "ENTRYPOINT instruction not found in Dockerfile"
+        assert 'CMD ["--help"]' in dockerfile_content, "CMD instruction not found in Dockerfile"
+        
+        print("\n✅ All checks passed! ENTRYPOINT, CMD and EXPOSE instructions are properly included.")
+
+
 if __name__ == "__main__":
     test_dockerfile_generation_with_expose_and_cmd()
+    test_dockerfile_generation_with_entrypoint_and_cmd()

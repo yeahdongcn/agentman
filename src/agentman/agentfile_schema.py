@@ -151,6 +151,11 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
             "description": "Default command to run in the container",
             "default": ["python", "agent.py"],
         },
+        "entrypoint": {
+            "type": "array", 
+            "items": {"type": "string"},
+            "description": "Entrypoint command for the container"
+        },
         "secrets": {
             "type": "array",
             "description": "List of secrets the agent needs",

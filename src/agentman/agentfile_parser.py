@@ -311,8 +311,8 @@ class DockerfileInstruction:
 
     def to_dockerfile_line(self) -> str:
         """Convert to Dockerfile line format."""
-        if self.instruction in ["CMD", "ENTRYPOINT"] and len(self.args) > 1:
-            # Handle array format for CMD/ENTRYPOINT
+        if self.instruction in ["CMD", "ENTRYPOINT"]:
+            # Always use array format for CMD/ENTRYPOINT for consistency
             args_str = json.dumps(self.args)
             return f"{self.instruction} {args_str}"
         return f"{self.instruction} {' '.join(self.args)}"
@@ -333,6 +333,7 @@ class AgentfileConfig:
     secrets: List[SecretType] = field(default_factory=list)
     expose_ports: List[int] = field(default_factory=list)
     cmd: List[str] = field(default_factory=lambda: ["python", "agent.py"])
+    entrypoint: List[str] = field(default_factory=list)
     dockerfile_instructions: List[DockerfileInstruction] = field(default_factory=list)
 
 
@@ -448,6 +449,11 @@ class AgentfileParser:
             # Store the CMD instruction with the correctly parsed args
             dockerfile_instruction = DockerfileInstruction(instruction="CMD", args=self.config.cmd)
             self.config.dockerfile_instructions.append(dockerfile_instruction)
+        elif instruction == "ENTRYPOINT":
+            self._handle_entrypoint(parts)
+            # Store the ENTRYPOINT instruction with the correctly parsed args
+            dockerfile_instruction = DockerfileInstruction(instruction="ENTRYPOINT", args=self.config.entrypoint)
+            self.config.dockerfile_instructions.append(dockerfile_instruction)
         elif instruction == "RUN":
             self._handle_dockerfile_instruction(instruction, parts)
         # All other Dockerfile instructions - store as-is
@@ -456,7 +462,6 @@ class AgentfileParser:
             "ARG",
             "ADD",
             "COPY",
-            "ENTRYPOINT",
             "HEALTHCHECK",
             "LABEL",
             "MAINTAINER",
@@ -709,6 +714,22 @@ class AgentfileParser:
         else:
             # Simple format: CMD python agent.py
             self.config.cmd = [self._unquote(part) for part in parts[1:]]
+        self.current_context = None
+
+    def _handle_entrypoint(self, parts: List[str]):
+        """Handle ENTRYPOINT instruction."""
+        if len(parts) < 2:
+            raise ValueError("ENTRYPOINT requires at least one argument")
+        # Handle both array format and simple format
+        if parts[1].startswith('[') and parts[-1].endswith(']'):
+            # Array format: ENTRYPOINT ["python", "agent.py"]
+            entrypoint_str = ' '.join(parts[1:])
+            # Simple JSON-like parsing
+            entrypoint_str = entrypoint_str.strip('[]')
+            self.config.entrypoint = [self._unquote(item.strip()) for item in entrypoint_str.split(',')]
+        else:
+            # Simple format: ENTRYPOINT python agent.py
+            self.config.entrypoint = [self._unquote(part) for part in parts[1:]]
         self.current_context = None
 
     def _handle_dockerfile_instruction(self, instruction: str, parts: List[str]):
