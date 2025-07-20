@@ -107,6 +107,40 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
                         "default": False,
                         "description": "Whether this is the default agent",
                     },
+                    "output_format": {
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["json_schema"],
+                                        "description": "Format type for output validation",
+                                    },
+                                    "schema": {"type": "object", "description": "Inline JSON Schema as YAML object"},
+                                },
+                                "required": ["type", "schema"],
+                                "additionalProperties": False,
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": ["schema_file"],
+                                        "description": "Reference to external schema file",
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "description": "Path to external schema file (.json or .yaml/.yml)",
+                                    },
+                                },
+                                "required": ["type", "file"],
+                                "additionalProperties": False,
+                            },
+                        ],
+                        "description": "Output format specification for structured data validation",
+                    },
                 },
                 "additionalProperties": False,
             },
@@ -220,6 +254,36 @@ agents:
     use_history: true
     human_input: false
     default: true
+    output_format:
+      type: json_schema
+      schema:
+        type: object
+        properties:
+          summary:
+            type: string
+            description: Brief summary of actions taken
+          emails_processed:
+            type: integer
+            description: Number of emails processed
+          labels_applied:
+            type: array
+            items:
+              type: object
+              properties:
+                email_subject:
+                  type: string
+                label:
+                  type: string
+                reason:
+                  type: string
+        required: [summary, emails_processed, labels_applied]
+
+  - name: data_analyzer
+    instruction: Analyze data and generate structured reports
+    servers: [fetch]
+    output_format:
+      type: schema_file
+      file: ./schemas/analysis_output.yaml
 
 command: [python, agent.py, -p, prompt.txt, --agent, gmail_actions]
 

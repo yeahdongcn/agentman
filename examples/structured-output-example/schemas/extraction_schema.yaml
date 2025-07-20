@@ -1,0 +1,53 @@
+type: object
+properties:
+  source_url:
+    type: string
+    format: uri
+    description: The URL of the document or page analyzed
+  title:
+    type: string
+    description: The title of the document
+  content:
+    type: object
+    properties:
+      headings:
+        type: array
+        items:
+          type: object
+          properties:
+            level:
+              type: integer
+              minimum: 1
+              maximum: 6
+            text:
+              type: string
+        description: Document headings with their levels
+      paragraphs:
+        type: array
+        items:
+          type: string
+        description: Main content paragraphs
+      links:
+        type: array
+        items:
+          type: object
+          properties:
+            url:
+              type: string
+              format: uri
+            text:
+              type: string
+        description: Links found in the document
+  metadata:
+    type: object
+    properties:
+      author:
+        type: string
+      published_date:
+        type: string
+        format: date
+      word_count:
+        type: integer
+        minimum: 0
+    description: Document metadata
+required: [source_url, title, content]

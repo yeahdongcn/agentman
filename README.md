@@ -439,6 +439,62 @@ agents:
   human_input: false
 ```
 
+### Structured Output Format
+
+Define validation schemas for agent outputs using JSONSchema:
+
+**Dockerfile format:**
+```dockerfile
+AGENT data_analyzer
+INSTRUCTION Analyze data and return structured results
+OUTPUT_FORMAT json_schema {"type":"object","properties":{"status":{"type":"string","enum":["success","error"]},"data":{"type":"object"}},"required":["status","data"]}
+
+AGENT file_processor
+INSTRUCTION Process files according to predefined schema
+OUTPUT_FORMAT schema_file ./schemas/processing_schema.yaml
+```
+
+**YAML format:**
+```yaml
+agents:
+- name: data_analyzer
+  instruction: Analyze data and return structured results
+  output_format:
+    type: json_schema
+    schema:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+        data:
+          type: object
+          properties:
+            count:
+              type: number
+            items:
+              type: array
+              items:
+                type: string
+      required: [status, data]
+
+- name: file_processor
+  instruction: Process files according to predefined schema
+  output_format:
+    type: schema_file
+    file: ./schemas/processing_schema.yaml
+```
+
+**Schema Types:**
+- `json_schema`: Inline JSONSchema definition in JSON format (Dockerfile) or YAML format (YAML Agentfile)
+- `schema_file`: Reference to external `.json` or `.yaml` schema file
+
+**Benefits:**
+- **Type Safety**: Validate agent outputs against predefined schemas
+- **Documentation**: Schemas serve as output documentation
+- **IDE Support**: JSONSchema provides autocomplete and validation
+- **Standards**: Uses standard JSONSchema specification
+
 ### Workflow Orchestration
 
 **Chains** (Sequential processing):
@@ -714,6 +770,48 @@ ROUTER support_router
 AGENTS support_agent escalation_agent
 INSTRUCTION Route based on inquiry complexity and urgency
 ```
+
+### 5. Structured Output Example
+
+Demonstrates JSONSchema validation for agent outputs with both inline and external schema definitions.
+
+**Project Structure:**
+```
+structured-output-example/
+├── Agentfile           # Dockerfile format with JSON schema
+├── Agentfile.yml       # YAML format with inline schema
+├── schemas/            # External schema files
+│   ├── extraction_schema.yaml
+│   └── simple_schema.json
+└── agent/              # Generated files
+```
+
+**Key Features:**
+- **Inline JSONSchema**: Define validation schemas directly in YAML format
+- **External Schema Files**: Reference separate `.json` or `.yaml` schema files
+- **Type Safety**: Validate agent outputs against predefined schemas
+- **Both Format Support**: Works with Dockerfile and YAML Agentfiles
+
+**Example Agent with Output Format:**
+```yaml
+agents:
+  - name: sentiment_analyzer
+    instruction: Analyze sentiment and return structured results
+    output_format:
+      type: json_schema
+      schema:
+        type: object
+        properties:
+          sentiment:
+            type: string
+            enum: [positive, negative, neutral]
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+        required: [sentiment, confidence]
+```
+
 ## 🔧 Advanced Configuration
 
 ### Custom Base Images

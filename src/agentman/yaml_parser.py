@@ -13,6 +13,7 @@ from agentman.agentfile_parser import (
     DockerfileInstruction,
     MCPServer,
     Orchestrator,
+    OutputFormat,
     Router,
     SecretContext,
     SecretValue,
@@ -183,6 +184,35 @@ class AgentfileYamlParser:
 
         if 'default' in agent_config:
             agent.default = bool(agent_config['default'])
+
+        if 'output_format' in agent_config:
+            output_format_config = agent_config['output_format']
+            if not isinstance(output_format_config, dict):
+                raise ValueError("Agent 'output_format' must be an object")
+
+            if 'type' not in output_format_config:
+                raise ValueError("Agent 'output_format' must have a 'type' field")
+
+            format_type = output_format_config['type']
+
+            if format_type == 'json_schema':
+                if 'schema' not in output_format_config:
+                    raise ValueError("Agent 'output_format' with type 'json_schema' must have a 'schema' field")
+                schema = output_format_config['schema']
+                if not isinstance(schema, dict):
+                    raise ValueError("Agent 'output_format' schema must be an object")
+                agent.output_format = OutputFormat(type='json_schema', schema=schema)
+            elif format_type == 'schema_file':
+                if 'file' not in output_format_config:
+                    raise ValueError("Agent 'output_format' with type 'schema_file' must have a 'file' field")
+                file_path = output_format_config['file']
+                if not isinstance(file_path, str):
+                    raise ValueError("Agent 'output_format' file must be a string")
+                if not file_path.endswith(('.json', '.yaml', '.yml')):
+                    raise ValueError("Agent 'output_format' file must reference a .json, .yaml, or .yml file")
+                agent.output_format = OutputFormat(type='schema_file', file=file_path)
+            else:
+                raise ValueError(f"Invalid output_format type: {format_type}. Supported: json_schema, schema_file")
 
         self.config.agents[name] = agent
 
