@@ -45,7 +45,12 @@ Get your first AI agent running in under 2 minutes:
 
 ```bash
 # 1. Install Agentman
+
+# From PyPI (recommended)
 pip install agentman-mcp
+
+# Or, install the latest version from GitHub using uv
+uv tool install git+https://github.com/o3-cloud/agentman.git@main#egg=agentman-mcp
 
 # 2. Create and run your first agent
 mkdir my-agent && cd my-agent
@@ -101,6 +106,8 @@ mkdir url-to-social && cd url-to-social
 ```
 
 **2. Create an `Agentfile`:**
+
+*Option A: Dockerfile format (traditional)*
 ```dockerfile
 FROM yeahdongcn/agentman-base:latest
 MODEL anthropic/claude-3-sonnet
@@ -124,6 +131,33 @@ CHAIN content_pipeline
 SEQUENCE url_analyzer social_writer
 
 CMD ["python", "agent.py"]
+```
+
+*Option B: YAML format (recommended for complex workflows)*
+```yaml
+# Agentfile.yml
+apiVersion: v1
+kind: Agent
+base:
+  model: anthropic/claude-3-sonnet
+mcp_servers:
+- name: fetch
+  command: uvx
+  args:
+  - mcp-server-fetch
+  transport: stdio
+agents:
+- name: url_analyzer
+  instruction: Given a URL, provide a comprehensive summary of the content
+  servers:
+  - fetch
+- name: social_writer
+  instruction: Transform any text into a compelling 280-character social media post
+chains:
+- name: content_pipeline
+  sequence:
+  - url_analyzer
+  - social_writer
 ```
 
 **3. Build and run:**
@@ -185,6 +219,32 @@ The intuitive `Agentfile` syntax lets you focus on designing intelligent workflo
 | **🚀 Production-Ready** | Optimized Docker containers with dependency management |
 | **🔐 Secure Secrets** | Environment-based secret handling with templates |
 | **🧪 Battle-Tested** | 91%+ test coverage ensures reliability |
+
+### ✨ Environment Variable Expansion in Agentfiles
+
+Now you can use environment variables directly in your `Agentfile` and `Agentfile.yml` for more flexible and secure configurations.
+
+**Usage examples:**
+
+**Agentfile format**
+```dockerfile
+# Agentfile format
+SECRET ALIYUN_API_KEY ${ALIYUN_API_KEY}
+MCP_SERVER github-mcp-server
+ENV GITHUB_PERSONAL_ACCESS_TOKEN ${GITHUB_TOKEN}
+```
+
+**YAML format**
+```yaml
+# YAML format
+secrets:
+  - name: ALIYUN_API_KEY
+    value: ${ALIYUN_API_KEY}
+mcp_servers:
+  - name: github-mcp-server
+    env:
+      GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_TOKEN}
+```
 
 ### 🌟 What Makes Agentman Different?
 
@@ -267,6 +327,47 @@ EXPOSE 8080                            # Expose ports
 CMD ["python", "agent.py"]             # Container startup command
 ```
 
+### 📄 File Format Support
+
+Agentman supports two file formats for defining your agent configurations:
+
+#### **Dockerfile-style Agentfile (Default)**
+The traditional Docker-like syntax using an `Agentfile` without extension:
+
+```dockerfile
+FROM yeahdongcn/agentman-base:latest
+MODEL anthropic/claude-3-sonnet
+FRAMEWORK fast-agent
+
+AGENT assistant
+INSTRUCTION You are a helpful AI assistant
+```
+
+#### **YAML Agentfile**
+Modern declarative YAML format using `Agentfile.yml` or `Agentfile.yaml`:
+
+```yaml
+apiVersion: v1
+kind: Agent
+base:
+  model: anthropic/claude-3-sonnet
+  framework: fast-agent
+agents:
+- name: assistant
+  instruction: You are a helpful AI assistant
+```
+
+**Key advantages of YAML format:**
+- **🎯 Better structure** for complex multi-agent configurations
+- **📝 Native support** for lists, nested objects, and comments
+- **🔍 IDE support** with syntax highlighting and validation
+- **📊 Clear hierarchy** for routers, chains, and orchestrators
+
+**Usage:**
+- **Build**: `agentman build .` (auto-detects format)
+- **Run**: `agentman run --from-agentfile .` (works with both formats)
+- **Convert**: Agentman can automatically convert between formats
+
 ### Framework Configuration
 
 Choose between supported AI agent frameworks:
@@ -290,6 +391,7 @@ FRAMEWORK agno        # Alternative: Agno framework
 
 Define external MCP servers that provide tools and capabilities:
 
+**Dockerfile format:**
 ```dockerfile
 MCP_SERVER filesystem
 COMMAND uvx
@@ -298,10 +400,23 @@ TRANSPORT stdio
 ENV PATH_PREFIX /app/data
 ```
 
+**YAML format:**
+```yaml
+mcp_servers:
+- name: filesystem
+  command: uvx
+  args:
+  - mcp-server-filesystem
+  transport: stdio
+  env:
+    PATH_PREFIX: /app/data
+```
+
 ### Agent Definitions
 
 Create individual agents with specific roles and capabilities:
 
+**Dockerfile format:**
 ```dockerfile
 AGENT assistant
 INSTRUCTION You are a helpful AI assistant specialized in data analysis
@@ -311,23 +426,120 @@ USE_HISTORY true
 HUMAN_INPUT false
 ```
 
+**YAML format:**
+```yaml
+agents:
+- name: assistant
+  instruction: You are a helpful AI assistant specialized in data analysis
+  servers:
+  - filesystem
+  - brave
+  model: anthropic/claude-3-sonnet
+  use_history: true
+  human_input: false
+```
+
+### Structured Output Format
+
+Define validation schemas for agent outputs using JSONSchema:
+
+**Dockerfile format:**
+```dockerfile
+AGENT data_analyzer
+INSTRUCTION Analyze data and return structured results
+OUTPUT_FORMAT json_schema {"type":"object","properties":{"status":{"type":"string","enum":["success","error"]},"data":{"type":"object"}},"required":["status","data"]}
+
+AGENT file_processor
+INSTRUCTION Process files according to predefined schema
+OUTPUT_FORMAT schema_file ./schemas/processing_schema.yaml
+```
+
+**YAML format:**
+```yaml
+agents:
+- name: data_analyzer
+  instruction: Analyze data and return structured results
+  output_format:
+    type: json_schema
+    schema:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+        data:
+          type: object
+          properties:
+            count:
+              type: number
+            items:
+              type: array
+              items:
+                type: string
+      required: [status, data]
+
+- name: file_processor
+  instruction: Process files according to predefined schema
+  output_format:
+    type: schema_file
+    file: ./schemas/processing_schema.yaml
+```
+
+**Schema Types:**
+- `json_schema`: Inline JSONSchema definition in JSON format (Dockerfile) or YAML format (YAML Agentfile)
+- `schema_file`: Reference to external `.json` or `.yaml` schema file
+
+**Benefits:**
+- **Type Safety**: Validate agent outputs against predefined schemas
+- **Documentation**: Schemas serve as output documentation
+- **IDE Support**: JSONSchema provides autocomplete and validation
+- **Standards**: Uses standard JSONSchema specification
+
 ### Workflow Orchestration
 
 **Chains** (Sequential processing):
+
+*Dockerfile format:*
 ```dockerfile
 CHAIN data_pipeline
 SEQUENCE data_loader data_processor data_exporter
 CUMULATIVE true
 ```
 
+*YAML format:*
+```yaml
+chains:
+- name: data_pipeline
+  sequence:
+  - data_loader
+  - data_processor
+  - data_exporter
+  cumulative: true
+```
+
 **Routers** (Conditional routing):
+
+*Dockerfile format:*
 ```dockerfile
 ROUTER query_router
 AGENTS sql_agent api_agent file_agent
 INSTRUCTION Route queries based on data source type
 ```
 
+*YAML format:*
+```yaml
+routers:
+- name: query_router
+  agents:
+  - sql_agent
+  - api_agent
+  - file_agent
+  instruction: Route queries based on data source type
+```
+
 **Orchestrators** (Complex coordination):
+
+*Dockerfile format:*
 ```dockerfile
 ORCHESTRATOR project_manager
 AGENTS developer tester deployer
@@ -336,10 +548,24 @@ PLAN_ITERATIONS 5
 HUMAN_INPUT true
 ```
 
+*YAML format:*
+```yaml
+orchestrators:
+- name: project_manager
+  agents:
+  - developer
+  - tester
+  - deployer
+  plan_type: iterative
+  plan_iterations: 5
+  human_input: true
+```
+
 ### Secrets Management
 
 Secure handling of API keys and sensitive configuration:
 
+**Dockerfile format:**
 ```dockerfile
 # Environment variable references
 SECRET OPENAI_API_KEY
@@ -353,6 +579,23 @@ SECRET CUSTOM_API
 API_KEY your_key_here
 BASE_URL https://api.example.com
 TIMEOUT 30
+```
+
+**YAML format:**
+```yaml
+secrets:
+- name: OPENAI_API_KEY
+  values: {}  # Environment variable reference
+- name: ANTHROPIC_API_KEY
+  values: {}
+- name: DATABASE_URL
+  values:
+    DATABASE_URL: postgresql://localhost:5432/mydb
+- name: CUSTOM_API
+  values:
+    API_KEY: your_key_here
+    BASE_URL: https://api.example.com
+    TIMEOUT: 30
 ```
 
 ### Default Prompt Support
@@ -426,6 +669,8 @@ This ensures your agent automatically executes the default prompt when the conta
 
 ## 🎯 Example Projects
 
+All example projects in the `/examples` directory include both Dockerfile-style `Agentfile` and YAML format `Agentfile.yml` for comparison and learning. You can use either format to build and run the examples.
+
 ### 1. GitHub Profile Manager (with Default Prompt)
 
 A comprehensive GitHub profile management agent that automatically loads a default prompt.
@@ -433,12 +678,25 @@ A comprehensive GitHub profile management agent that automatically loads a defau
 **Project Structure:**
 ```
 github-profile-manager/
-├── Agentfile
+├── Agentfile           # Dockerfile format
+├── Agentfile.yml       # YAML format (same functionality)
 ├── prompt.txt          # Default prompt automatically loaded
 └── agent/              # Generated files
     ├── agent.py
     ├── prompt.txt      # Copied during build
     └── ...
+```
+
+**Build with either format:**
+```bash
+# Using Dockerfile format
+agentman build -f Agentfile .
+
+# Using YAML format  
+agentman build -f Agentfile.yml .
+
+# Auto-detection (picks first available)
+agentman build .
 ```
 
 **prompt.txt:**
@@ -512,6 +770,48 @@ ROUTER support_router
 AGENTS support_agent escalation_agent
 INSTRUCTION Route based on inquiry complexity and urgency
 ```
+
+### 5. Structured Output Example
+
+Demonstrates JSONSchema validation for agent outputs with both inline and external schema definitions.
+
+**Project Structure:**
+```
+structured-output-example/
+├── Agentfile           # Dockerfile format with JSON schema
+├── Agentfile.yml       # YAML format with inline schema
+├── schemas/            # External schema files
+│   ├── extraction_schema.yaml
+│   └── simple_schema.json
+└── agent/              # Generated files
+```
+
+**Key Features:**
+- **Inline JSONSchema**: Define validation schemas directly in YAML format
+- **External Schema Files**: Reference separate `.json` or `.yaml` schema files
+- **Type Safety**: Validate agent outputs against predefined schemas
+- **Both Format Support**: Works with Dockerfile and YAML Agentfiles
+
+**Example Agent with Output Format:**
+```yaml
+agents:
+  - name: sentiment_analyzer
+    instruction: Analyze sentiment and return structured results
+    output_format:
+      type: json_schema
+      schema:
+        type: object
+        properties:
+          sentiment:
+            type: string
+            enum: [positive, negative, neutral]
+          confidence:
+            type: number
+            minimum: 0
+            maximum: 1
+        required: [sentiment, confidence]
+```
+
 ## 🔧 Advanced Configuration
 
 ### Custom Base Images
@@ -573,7 +873,7 @@ agentman/
 ## 🏗️ Building from Source
 
 ```bash
-git clone https://github.com/yeahdongcn/agentman.git
+git clone https://github.com/o3-cloud/agentman.git
 cd agentman
 
 # Install

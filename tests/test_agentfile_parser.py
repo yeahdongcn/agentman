@@ -11,20 +11,21 @@ Tests cover all aspects of the AgentfileParser including:
 - Error handling and validation
 """
 
-import pytest
-import tempfile
 import os
+import tempfile
+
+import pytest
 
 from agentman.agentfile_parser import (
-    AgentfileParser,
-    AgentfileConfig,
-    MCPServer,
     Agent,
-    Router,
+    AgentfileConfig,
+    AgentfileParser,
     Chain,
+    MCPServer,
     Orchestrator,
+    Router,
+    SecretContext,
     SecretValue,
-    SecretContext
 )
 
 
@@ -181,11 +182,7 @@ API_KEY claude-key
     def _find_instruction_by_type(self, instructions, instruction_type):
         """Helper function to find instruction by type."""
         return next(
-            (
-                instruction
-                for instruction in instructions
-                if instruction.instruction == instruction_type
-            ),
+            (instruction for instruction in instructions if instruction.instruction == instruction_type),
             None,
         )
 
@@ -293,7 +290,7 @@ CMD ["python", "app.py"]
             ("COPY", [".", "."]),
             ("RUN", ["pip", "install", "-r", "requirements.txt"]),
             ("EXPOSE", ["8080"]),
-            ("CMD", ["python", "app.py"])
+            ("CMD", ["python", "app.py"]),
         ]
 
         assert len(config.dockerfile_instructions) == len(expected_instructions)
@@ -449,10 +446,12 @@ SERVERS fetch github-mcp-server
         assert agent.servers == ["fetch", "github-mcp-server"]
 
         # Check that the multiline instruction is properly combined
-        expected_instruction = ('Given a GitHub repository URL, find the latest **official release** of the repository. '
-                               'An official release is one that is explicitly marked as **"Latest"** and **not** marked as a **"Pre-release"**. '
-                               'If you encounter a release marked as **Pre-release**, do **not** stop or return it. '
-                               'Instead, continue checking additional releases until you find the most recent release that meets the criteria.')
+        expected_instruction = (
+            'Given a GitHub repository URL, find the latest **official release** of the repository. '
+            'An official release is one that is explicitly marked as **"Latest"** and **not** marked as a **"Pre-release"**. '
+            'If you encounter a release marked as **Pre-release**, do **not** stop or return it. '
+            'Instead, continue checking additional releases until you find the most recent release that meets the criteria.'
+        )
         assert agent.instruction == expected_instruction
 
     def test_multiline_instruction_complex_syntax(self):
@@ -475,16 +474,20 @@ SERVERS server1 server2
         agent = config.agents["complex-agent"]
 
         # Check that all lines are properly combined with spaces
-        expected_instruction = ('This is a very long instruction that spans multiple lines '
-                               'and contains detailed explanations about what the agent should do. '
-                               'It includes specific requirements, formatting instructions, '
-                               'and examples of the expected output format. '
-                               'The agent should handle edge cases gracefully '
-                               'and provide comprehensive responses.')
+        expected_instruction = (
+            'This is a very long instruction that spans multiple lines '
+            'and contains detailed explanations about what the agent should do. '
+            'It includes specific requirements, formatting instructions, '
+            'and examples of the expected output format. '
+            'The agent should handle edge cases gracefully '
+            'and provide comprehensive responses.'
+        )
         assert agent.instruction == expected_instruction
         assert agent.servers == ["server1", "server2"]
 
     # ...existing code...
+
+
 class TestDataClasses:
     """Test suite for data classes used by AgentfileParser."""
 
@@ -496,7 +499,7 @@ class TestDataClasses:
             args=["tool", "run"],
             transport="stdio",
             url="http://localhost",
-            env={"KEY": "value"}
+            env={"KEY": "value"},
         )
         assert server.name == "test"
         assert server.command == "uv"
@@ -532,10 +535,7 @@ class TestDataClasses:
 
     def test_secret_context_creation(self):
         """Test SecretContext data class creation."""
-        secret = SecretContext(
-            name="GENERIC",
-            values={"API_KEY": "value", "BASE_URL": "url"}
-        )
+        secret = SecretContext(name="GENERIC", values={"API_KEY": "value", "BASE_URL": "url"})
         assert secret.name == "GENERIC"
         assert secret.values == {"API_KEY": "value", "BASE_URL": "url"}
 
@@ -545,7 +545,7 @@ class TestDataClasses:
             name="multi_agent",
             agents=["agent1", "agent2"],
             model="anthropic/claude-3-sonnet-20241022",
-            instruction="Route requests"
+            instruction="Route requests",
         )
         assert router.name == "multi_agent"
         assert router.agents == ["agent1", "agent2"]
@@ -555,11 +555,7 @@ class TestDataClasses:
 
     def test_chain_creation(self):
         """Test Chain data class creation."""
-        chain = Chain(
-            name="sequential",
-            sequence=["agent1", "agent2"],
-            instruction="Process sequentially"
-        )
+        chain = Chain(name="sequential", sequence=["agent1", "agent2"], instruction="Process sequentially")
         assert chain.name == "sequential"
         assert chain.sequence == ["agent1", "agent2"]
         assert chain.instruction == "Process sequentially"

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Test script to verify prompt.txt support in AgentBuilder."""
 
-import tempfile
 import os
+import tempfile
 from pathlib import Path
 
-from agentman.agentfile_parser import AgentfileParser
 from agentman.agent_builder import AgentBuilder
+from agentman.agentfile_parser import AgentfileParser
 
 
 def test_prompt_txt_support():
@@ -60,7 +60,9 @@ INSTRUCTION You are a helpful test agent.
                 agent_content = f.read()
 
             assert "prompt_file = 'prompt.txt'" in agent_content, "Agent should check for prompt.txt"
-            assert "with open(prompt_file, 'r', encoding='utf-8') as f:" in agent_content, "Agent should read prompt.txt"
+            assert (
+                "with open(prompt_file, 'r', encoding='utf-8') as f:" in agent_content
+            ), "Agent should read prompt.txt"
             assert "await agent(prompt_content)" in agent_content, "Agent should use prompt content"
 
             # Verify Dockerfile contains COPY prompt.txt

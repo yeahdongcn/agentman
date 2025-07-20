@@ -1,8 +1,8 @@
 """Base framework interface for AgentMan."""
 
 from abc import ABC, abstractmethod
-from typing import List
 from pathlib import Path
+from typing import List
 
 from agentman.agentfile_parser import AgentfileConfig
 
@@ -19,22 +19,18 @@ class BaseFramework(ABC):
     @abstractmethod
     def build_agent_content(self) -> str:
         """Build the main agent file content."""
-        pass
 
     @abstractmethod
     def get_requirements(self) -> List[str]:
         """Get framework-specific requirements."""
-        pass
 
     @abstractmethod
     def generate_config_files(self) -> None:
         """Generate framework-specific configuration files."""
-        pass
 
     @abstractmethod
     def get_dockerfile_config_lines(self) -> List[str]:
         """Get framework-specific Dockerfile configuration lines."""
-        pass
 
     def get_custom_model_providers(self) -> set:
         """Extract custom model providers from all models used."""

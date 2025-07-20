@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Agent
+base:
+  model: generic.qwen3:latest
+mcp_servers:
+- name: fetch
+  command: uvx
+  args:
+  - mcp-server-fetch
+agents:
+- name: url_fetcher
+  instruction: Given a URL, provide a complete and comprehensive summary
+  servers:
+  - fetch
+- name: social_media
+  instruction: Write a 280 character social media post for any given text. Respond
+    only with the post, never use hashtags.
+chains:
+- name: post_writer
+  sequence:
+  - url_fetcher
+  - social_media
+secrets:
+- name: GENERIC
+  values:
+    API_KEY: ollama
+    BASE_URL: http://host.docker.internal:11434/v1

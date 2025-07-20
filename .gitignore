@@ -14,3 +14,4 @@ htmlcov/
 
 # Generated files
 agent/
+build/
