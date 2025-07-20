@@ -115,34 +115,31 @@ AGENTFILE_YAML_SCHEMA: Dict[str, Any] = {
                                     "type": {
                                         "type": "string",
                                         "enum": ["json_schema"],
-                                        "description": "Format type for output validation"
+                                        "description": "Format type for output validation",
                                     },
-                                    "schema": {
-                                        "type": "object",
-                                        "description": "Inline JSON Schema as YAML object"
-                                    }
+                                    "schema": {"type": "object", "description": "Inline JSON Schema as YAML object"},
                                 },
                                 "required": ["type", "schema"],
-                                "additionalProperties": False
+                                "additionalProperties": False,
                             },
                             {
-                                "type": "object", 
+                                "type": "object",
                                 "properties": {
                                     "type": {
                                         "type": "string",
                                         "enum": ["schema_file"],
-                                        "description": "Reference to external schema file"
+                                        "description": "Reference to external schema file",
                                     },
                                     "file": {
                                         "type": "string",
-                                        "description": "Path to external schema file (.json or .yaml/.yml)"
-                                    }
+                                        "description": "Path to external schema file (.json or .yaml/.yml)",
+                                    },
                                 },
                                 "required": ["type", "file"],
-                                "additionalProperties": False
-                            }
+                                "additionalProperties": False,
+                            },
                         ],
-                        "description": "Output format specification for structured data validation"
+                        "description": "Output format specification for structured data validation",
                     },
                 },
                 "additionalProperties": False,

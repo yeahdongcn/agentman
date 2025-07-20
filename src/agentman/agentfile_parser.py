@@ -68,6 +68,7 @@ class MCPServer:
 @dataclass
 class OutputFormat:
     """Represents output format configuration for an agent."""
+
     type: str  # "json_schema" or "schema_file"
     schema: Optional[Dict[str, Any]] = None  # For inline JSON Schema as YAML
     file: Optional[str] = None  # For external schema file reference
@@ -124,13 +125,7 @@ class Agent:
             schema = self.output_format.schema
             model_name = self._get_model_name_from_schema(schema)
 
-            response_format = {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": model_name,
-                    "schema": schema
-                }
-            }
+            response_format = {"type": "json_schema", "json_schema": {"name": model_name, "schema": schema}}
 
             return f"RequestParams(response_format={response_format})"
 
@@ -147,7 +142,7 @@ class Agent:
         import yaml
 
         file_path = self.output_format.file
-        
+
         # Resolve relative paths relative to the Agentfile location
         if not os.path.isabs(file_path) and base_path:
             file_path = os.path.join(base_path, file_path)
@@ -162,13 +157,7 @@ class Agent:
                     return f"# Error: Unsupported schema file format: {file_path}"
 
             model_name = self._get_model_name_from_schema(schema)
-            response_format = {
-                "type": "json_schema",
-                "json_schema": {
-                    "name": model_name,
-                    "schema": schema
-                }
-            }
+            response_format = {"type": "json_schema", "json_schema": {"name": model_name, "schema": schema}}
 
             return f"RequestParams(response_format={response_format})"
 
@@ -361,8 +350,9 @@ class AgentfileParser:
         """Parse an Agentfile and return the configuration."""
         # Store the directory containing the Agentfile for resolving relative paths
         import os
+
         self.base_path = os.path.dirname(os.path.abspath(filepath))
-        
+
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
         return self.parse_content(content)
@@ -859,6 +849,7 @@ class AgentfileParser:
                 # Try to parse as inline YAML/JSON schema
                 try:
                     import yaml
+
                     schema_dict = yaml.safe_load(schema_value)
                     agent.output_format = OutputFormat(type="json_schema", schema=schema_dict)
                 except (ImportError, yaml.YAMLError):

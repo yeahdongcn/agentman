@@ -189,12 +189,12 @@ class AgentfileYamlParser:
             output_format_config = agent_config['output_format']
             if not isinstance(output_format_config, dict):
                 raise ValueError("Agent 'output_format' must be an object")
-            
+
             if 'type' not in output_format_config:
                 raise ValueError("Agent 'output_format' must have a 'type' field")
-            
+
             format_type = output_format_config['type']
-            
+
             if format_type == 'json_schema':
                 if 'schema' not in output_format_config:
                     raise ValueError("Agent 'output_format' with type 'json_schema' must have a 'schema' field")
