@@ -86,7 +86,7 @@ class Agent:
     default: bool = False
     output_format: Optional[OutputFormat] = None
 
-    def to_decorator_string(self, default_model: Optional[str] = None) -> str:
+    def to_decorator_string(self, default_model: Optional[str] = None, base_path: Optional[str] = None) -> str:
         """Generate the @fast.agent decorator string."""
         params = [f'name="{self.name}"', f'instruction="""{self.instruction}"""']
 
@@ -106,7 +106,84 @@ class Agent:
         if self.default:
             params.append("default=True")
 
+        # Add response_format if output_format is specified
+        if self.output_format:
+            request_params = self._generate_request_params(base_path)
+            if request_params:
+                params.append(f"request_params={request_params}")
+
         return "@fast.agent(\n    " + ",\n    ".join(params) + "\n)"
+
+    def _generate_request_params(self, base_path: Optional[str] = None) -> Optional[str]:
+        """Generate RequestParams with response_format from output_format."""
+        if not self.output_format:
+            return None
+
+        if self.output_format.type == "json_schema" and self.output_format.schema:
+            # Convert JSON Schema to OpenAI response_format structure
+            schema = self.output_format.schema
+            model_name = self._get_model_name_from_schema(schema)
+
+            response_format = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": model_name,
+                    "schema": schema
+                }
+            }
+
+            return f"RequestParams(response_format={response_format})"
+
+        elif self.output_format.type == "schema_file" and self.output_format.file:
+            # Load and convert external schema file
+            return self._generate_request_params_from_file(base_path)
+
+        return None
+
+    def _generate_request_params_from_file(self, base_path: Optional[str] = None) -> str:
+        """Generate RequestParams by loading schema from external file."""
+        import json
+        import os
+        import yaml
+
+        file_path = self.output_format.file
+        
+        # Resolve relative paths relative to the Agentfile location
+        if not os.path.isabs(file_path) and base_path:
+            file_path = os.path.join(base_path, file_path)
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                if file_path.endswith('.json'):
+                    schema = json.load(f)
+                elif file_path.endswith(('.yaml', '.yml')):
+                    schema = yaml.safe_load(f)
+                else:
+                    return f"# Error: Unsupported schema file format: {file_path}"
+
+            model_name = self._get_model_name_from_schema(schema)
+            response_format = {
+                "type": "json_schema",
+                "json_schema": {
+                    "name": model_name,
+                    "schema": schema
+                }
+            }
+
+            return f"RequestParams(response_format={response_format})"
+
+        except (FileNotFoundError, json.JSONDecodeError, yaml.YAMLError) as e:
+            return f"# Error loading schema file {file_path}: {e}"
+
+    def _get_model_name_from_schema(self, schema: Dict[str, Any]) -> str:
+        """Generate a model name from the agent name or schema title."""
+        if isinstance(schema, dict) and "title" in schema:
+            return schema["title"]
+
+        # Convert agent name to PascalCase for model name
+        words = self.name.replace("-", "_").replace(" ", "_").split("_")
+        model_name = "".join(word.capitalize() for word in words if word)
+        return f"{model_name}Model"
 
 
 @dataclass
@@ -274,13 +351,18 @@ class AgentfileConfig:
 class AgentfileParser:
     """Parser for Agentfile format."""
 
-    def __init__(self):
+    def __init__(self, base_path: Optional[str] = None):
         self.config = AgentfileConfig()
         self.current_context = None
         self.current_item = None
+        self.base_path = base_path
 
     def parse_file(self, filepath: str) -> AgentfileConfig:
         """Parse an Agentfile and return the configuration."""
+        # Store the directory containing the Agentfile for resolving relative paths
+        import os
+        self.base_path = os.path.dirname(os.path.abspath(filepath))
+        
         with open(filepath, 'r', encoding='utf-8') as f:
             content = f.read()
         return self.parse_content(content)

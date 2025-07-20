@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Agent
 
 base:
-  model: anthropic/claude-3-sonnet
+  model: gpt-4.1
   framework: fast-agent
 
 mcp_servers:
