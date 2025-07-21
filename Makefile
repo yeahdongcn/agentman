@@ -1,4 +1,4 @@
-IMAGE_NAME ?= yeahdongcn/agentman-base:latest
+IMAGE_NAME ?= ghcr.io/o3-cloud/agentman/base:main
 
 default: install
 

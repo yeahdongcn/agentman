@@ -15,7 +15,7 @@ class TestFrameworkSupport:
     def test_framework_parsing_fast_agent_default(self):
         """Test that FastAgent is the default framework."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
 INSTRUCTION Test agent
@@ -27,7 +27,7 @@ INSTRUCTION Test agent
     def test_framework_parsing_agno_explicit(self):
         """Test parsing explicit Agno framework."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -40,7 +40,7 @@ INSTRUCTION Test agent
     def test_framework_parsing_fast_agent_explicit(self):
         """Test parsing explicit FastAgent framework."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK fast-agent
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -53,7 +53,7 @@ INSTRUCTION Test agent
     def test_framework_validation_invalid(self):
         """Test that invalid framework raises error."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK invalid-framework
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -66,7 +66,7 @@ INSTRUCTION Test agent
     def test_fast_agent_code_generation(self):
         """Test FastAgent code generation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK fast-agent
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -87,7 +87,7 @@ INSTRUCTION Test agent
     def test_agno_code_generation(self):
         """Test Agno code generation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -112,7 +112,7 @@ INSTRUCTION Test agent
     def test_agno_multi_agent_team_generation(self):
         """Test Agno multi-agent team generation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT researcher
@@ -150,7 +150,7 @@ SERVERS finance
     def test_fast_agent_requirements(self):
         """Test FastAgent requirements generation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK fast-agent
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -169,7 +169,7 @@ INSTRUCTION Test agent
     def test_agno_requirements(self):
         """Test Agno requirements generation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -195,7 +195,7 @@ SERVERS web_search finance
     def test_openai_model_requirements(self):
         """Test that OpenAI models add OpenAI dependency."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL openai/gpt-4
 AGENT test
@@ -213,7 +213,7 @@ INSTRUCTION Test agent
     def test_fast_agent_config_generation(self):
         """Test FastAgent config file generation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK fast-agent
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -235,7 +235,7 @@ SECRET ANTHROPIC_API_KEY
     def test_agno_config_generation(self):
         """Test Agno config file generation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -258,7 +258,7 @@ SECRET ANTHROPIC_API_KEY
         """Test that Dockerfile copies correct config files for each framework."""
         # Test FastAgent
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK fast-agent
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -279,7 +279,7 @@ INSTRUCTION Test agent
 
         # Test Agno
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -302,7 +302,7 @@ INSTRUCTION Test agent
         # This would need to be tested by capturing print output
         # For now, we'll just verify the logic exists
         content_agno = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -313,7 +313,7 @@ INSTRUCTION Test agent
         assert config.framework == "agno"
 
         content_fast = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK fast-agent
 MODEL anthropic/claude-3-sonnet-20241022
 AGENT test
@@ -324,7 +324,7 @@ INSTRUCTION Test agent
 
     def test_agent_specific_model_instruction(self):
         """Test that MODEL instruction within AGENT context works correctly."""
-        agentfile_content = """FROM yeahdongcn/agentman-base:latest
+        agentfile_content = """FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL anthropic/claude-3-haiku-20240307
 

@@ -14,7 +14,7 @@ def test_prompt_txt_support():
 
     # Create a test Agentfile content
     agentfile_content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL anthropic/claude-3-sonnet-20241022
 
 AGENT test_agent
@@ -80,7 +80,7 @@ def test_no_prompt_txt_backward_compatibility():
 
     # Create a test Agentfile content
     agentfile_content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL anthropic/claude-3-sonnet-20241022
 
 AGENT test_agent

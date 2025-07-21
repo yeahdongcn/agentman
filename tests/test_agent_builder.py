@@ -37,7 +37,7 @@ class TestAgentBuilder:
     def setup_method(self):
         """Set up test fixtures."""
         self.config = AgentfileConfig()
-        self.config.base_image = "yeahdongcn/agentman-base:latest"
+        self.config.base_image = "ghcr.io/o3-cloud/agentman/base:main"
         self.config.default_model = "generic.qwen3:latest"
         self.config.cmd = ["python", "agent.py"]
 
@@ -255,7 +255,7 @@ class TestAgentBuilder:
             with open(dockerfile, 'r') as f:
                 content = f.read()
 
-            assert "FROM yeahdongcn/agentman-base:latest" in content
+            assert "FROM ghcr.io/o3-cloud/agentman/base:main" in content
             assert "WORKDIR /app" in content
             assert 'CMD ["python", "agent.py"]' in content
 
@@ -275,8 +275,8 @@ class TestAgentBuilder:
             assert "EXPOSE 8080" in content
 
     def test_generate_dockerfile_fast_agent_base(self):
-        """Test Dockerfile generation with yeahdongcn/agentman-base:latest base."""
-        self.config.base_image = "yeahdongcn/agentman-base:latest"
+        """Test Dockerfile generation with ghcr.io/o3-cloud/agentman/base:main base."""
+        self.config.base_image = "ghcr.io/o3-cloud/agentman/base:main"
 
         with tempfile.TemporaryDirectory() as temp_dir:
             builder = AgentBuilder(self.config, temp_dir)
@@ -286,7 +286,7 @@ class TestAgentBuilder:
             with open(dockerfile, 'r') as f:
                 content = f.read()
 
-            assert "FROM yeahdongcn/agentman-base:latest" in content
+            assert "FROM ghcr.io/o3-cloud/agentman/base:main" in content
             assert "COPY agent.py" in content
             assert "RUN pip install" in content
 
@@ -473,7 +473,7 @@ class TestAgentBuilderEdgeCases:
     def setup_method(self):
         """Set up test fixtures."""
         self.config = AgentfileConfig()
-        self.config.base_image = "yeahdongcn/agentman-base:latest"
+        self.config.base_image = "ghcr.io/o3-cloud/agentman/base:main"
         self.config.default_model = "generic.qwen3:latest"
         self.config.cmd = ["python", "agent.py"]
 

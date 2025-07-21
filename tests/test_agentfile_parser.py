@@ -40,7 +40,7 @@ class TestAgentfileParser:
         """Test parser initialization."""
         assert self.parser.config is not None
         assert isinstance(self.parser.config, AgentfileConfig)
-        assert self.parser.config.base_image == "yeahdongcn/agentman-base:latest"
+        assert self.parser.config.base_image == "ghcr.io/o3-cloud/agentman/base:main"
         assert self.parser.config.secrets == []
         assert self.parser.config.servers == {}
         assert self.parser.config.agents == {}
@@ -119,7 +119,7 @@ EXPOSE 8080
     def test_empty_agentfile(self):
         """Test parsing empty Agentfile."""
         config = self.parser.parse_content("")
-        assert config.base_image == "yeahdongcn/agentman-base:latest"
+        assert config.base_image == "ghcr.io/o3-cloud/agentman/base:main"
         assert len(config.secrets) == 0
         assert len(config.servers) == 0
         assert len(config.agents) == 0
@@ -145,7 +145,7 @@ EXPOSE 8080
     def test_parse_content_with_secret_context_arbitrary_name(self):
         """Test parsing secret context with arbitrary names like 'openai'."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL generic.qwen3:latest
 
 SECRET openai
@@ -237,14 +237,14 @@ RUN apt-get update && apt-get install -y \\
     def test_parse_run_instruction_complex_multiline(self):
         """Test parsing complex multi-line RUN instruction like the one in the Agentfile."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 RUN apt-get update && apt-get install -y \\
     wget \\
     && rm -rf /var/lib/apt/lists/*
 """
         config = self.parser.parse_content(content)
 
-        assert config.base_image == "yeahdongcn/agentman-base:latest"
+        assert config.base_image == "ghcr.io/o3-cloud/agentman/base:main"
         assert len(config.dockerfile_instructions) == 2  # FROM and RUN
 
         # Find the RUN instruction
@@ -332,7 +332,7 @@ EXPOSE 8080
     def test_parse_content_with_duplicate_secret(self):
         """Test parsing content with duplicate secret definitions."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 
 SECRET my_secret
 API_KEY sk-test123
@@ -351,7 +351,7 @@ BASE_URL https://api.openai.com/v1
     def test_env_key_value_syntax_server_context(self):
         """Test parsing ENV KEY=VALUE syntax in SERVER context."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 
 SERVER github-mcp-server
 COMMAND /server/github-mcp-server
@@ -378,14 +378,14 @@ TRANSPORT stdio
     def test_env_key_value_syntax_dockerfile_context(self):
         """Test parsing ENV KEY=VALUE syntax as Dockerfile instruction."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV PYTHON_PATH=/usr/local/lib/python3.9
 WORKDIR /app
 """
         config = self.parser.parse_content(content)
 
-        assert config.base_image == "yeahdongcn/agentman-base:latest"
+        assert config.base_image == "ghcr.io/o3-cloud/agentman/base:main"
         assert len(config.dockerfile_instructions) == 4  # FROM, ENV, ENV, WORKDIR
 
         # Find the ENV instructions
@@ -405,7 +405,7 @@ WORKDIR /app
     def test_env_mixed_syntax_server_context(self):
         """Test parsing mixed ENV syntax (KEY VALUE and KEY=VALUE) in SERVER context."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 
 SERVER mixed-server
 COMMAND /server/mixed-server
@@ -428,7 +428,7 @@ TRANSPORT stdio
     def test_multiline_instruction_syntax(self):
         """Test parsing multiline INSTRUCTION with backslash continuation."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 
 AGENT github-release-checker
 INSTRUCTION Given a GitHub repository URL, find the latest **official release** of the repository. \\
@@ -457,7 +457,7 @@ SERVERS fetch github-mcp-server
     def test_multiline_instruction_complex_syntax(self):
         """Test parsing complex multiline INSTRUCTION with multiple continuation lines."""
         content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 
 AGENT complex-agent
 INSTRUCTION This is a very long instruction that spans multiple lines \\

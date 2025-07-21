@@ -37,7 +37,7 @@ class TestAgentfileYamlParser:
         """Test parser initialization."""
         assert self.parser.config is not None
         assert isinstance(self.parser.config, AgentfileConfig)
-        assert self.parser.config.base_image == "yeahdongcn/agentman-base:latest"
+        assert self.parser.config.base_image == "ghcr.io/o3-cloud/agentman/base:main"
         assert self.parser.config.secrets == []
         assert self.parser.config.servers == {}
         assert self.parser.config.agents == {}
@@ -301,7 +301,7 @@ mcp_servers:
     def test_empty_yaml_file(self):
         """Test parsing empty YAML file."""
         config = self.parser.parse_content("")
-        assert config.base_image == "yeahdongcn/agentman-base:latest"
+        assert config.base_image == "ghcr.io/o3-cloud/agentman/base:main"
         assert len(config.secrets) == 0
         assert len(config.servers) == 0
         assert len(config.agents) == 0
@@ -636,7 +636,7 @@ agents:
 
         # Parse a Dockerfile format with multiple agents
         dockerfile_content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL deepseek/deepseek-chat
 

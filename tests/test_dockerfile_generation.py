@@ -64,7 +64,7 @@ def test_dockerfile_generation_with_entrypoint_and_cmd():
     
     # Create a test Agentfile content with ENTRYPOINT and CMD instructions
     agentfile_content = """
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL gpt-4
 FRAMEWORK fast-agent
 

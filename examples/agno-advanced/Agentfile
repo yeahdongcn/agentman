@@ -1,4 +1,4 @@
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 FRAMEWORK agno
 MODEL deepseek/deepseek-chat
 

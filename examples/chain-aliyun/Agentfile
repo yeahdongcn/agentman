@@ -1,5 +1,5 @@
 # Chain Example Agentfile
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL qwen-plus
 
 SECRET ALIYUN_API_KEY sk-...

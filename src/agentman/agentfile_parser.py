@@ -322,7 +322,7 @@ class DockerfileInstruction:
 class AgentfileConfig:
     """Represents the complete Agentfile configuration."""
 
-    base_image: str = "yeahdongcn/agentman-base:latest"
+    base_image: str = "ghcr.io/o3-cloud/agentman/base:main"
     default_model: Optional[str] = None
     framework: str = "fast-agent"  # "fast-agent" or "agno"
     servers: Dict[str, MCPServer] = field(default_factory=dict)

@@ -109,7 +109,7 @@ mkdir url-to-social && cd url-to-social
 
 *Option A: Dockerfile format (traditional)*
 ```dockerfile
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL anthropic/claude-3-sonnet
 
 # Add web search capability
@@ -320,7 +320,7 @@ The `Agentfile` uses a Docker-like syntax to define your agent applications. Her
 ### Base Configuration
 
 ```dockerfile
-FROM yeahdongcn/agentman-base:latest   # Base image
+FROM ghcr.io/o3-cloud/agentman/base:main   # Base image
 FRAMEWORK fast-agent                   # AI framework (fast-agent or agno)
 MODEL anthropic/claude-3-sonnet        # Default model for agents
 EXPOSE 8080                            # Expose ports
@@ -335,7 +335,7 @@ Agentman supports two file formats for defining your agent configurations:
 The traditional Docker-like syntax using an `Agentfile` without extension:
 
 ```dockerfile
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL anthropic/claude-3-sonnet
 FRAMEWORK fast-agent
 
@@ -747,7 +747,7 @@ chain-ollama/
 Example of a more complex multi-agent system with routers and orchestrators:
 
 ```dockerfile
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 MODEL anthropic/claude-3-sonnet
 
 MCP_SERVER database

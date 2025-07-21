@@ -49,7 +49,7 @@ def config_to_yaml_dict(config: AgentfileConfig) -> Dict[str, Any]:
 
     # Base configuration
     base_config = {}
-    if config.base_image != "yeahdongcn/agentman-base:latest":
+    if config.base_image != "ghcr.io/o3-cloud/agentman/base:main":
         base_config["image"] = config.base_image
     if config.default_model:
         base_config["model"] = config.default_model

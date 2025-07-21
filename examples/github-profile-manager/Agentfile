@@ -1,4 +1,4 @@
-FROM yeahdongcn/agentman-base:latest
+FROM ghcr.io/o3-cloud/agentman/base:main
 
 COPY --from=ghcr.io/github/github-mcp-server /server/github-mcp-server /server/github-mcp-server
 COPY --from=ghcr.io/github/github-mcp-server /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
